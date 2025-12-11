@@ -122,6 +122,8 @@ export class Voxelizer {
       color = { r: 0, g: 0, b: 0 }  // Default text color
     } = options;
 
+    const borderColor = options.borderColor || color;
+
     const rows = 5; // Font height (5x5 pixel font)
     
     // Build letter grid
@@ -184,7 +186,7 @@ export class Voxelizer {
         // Create voxel
         let voxel = null;
         if (isBorder) {
-          voxel = { filled: true, type: 'border', color };
+          voxel = { filled: true, type: 'border', color: borderColor };
         } else if (isContent) {
           voxel = { filled: true, type: 'text', color };
         } else {

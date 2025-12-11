@@ -1,16 +1,63 @@
 <!DOCTYPE html>
+<!-- BlockForge Platform -->
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BlockForge Platform</title>
-</head>
-<body>
-  <div id="app">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BlockForge Platform</title>
+    <style>
+      body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; background: #f0f2f5; }
+      h1 { color: #1b2a34; }
+      .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+      .controls { margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 4px; display: flex; gap: 10px; align-items: center; }
+      canvas { border: 1px solid #ddd; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+      #stats { margin-top: 10px; font-size: 0.9em; color: #666; }
+    </style>
+  </head>
+  <body>
     <h1>BlockForge Platform</h1>
-    <p>Loading plugins...</p>
-    <div id="plugin-list"></div>
-  </div>
-  <script type="module" src="/main.js"></script>
-</body>
+    
+    <div class="container">
+      <div id="plugin-list"></div>
+      
+      <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+
+      <!-- Plugin UI Container -->
+      <div id="workspace">
+        <div class="controls">
+          <input type="text" id="text-input" placeholder="Enter text" value="BLOCKFORGE" style="padding: 8px;">
+          <label for="size-select" style="font-size: 0.95em; margin-right: 5px;">Size:</label>
+          <select id="size-select" style="padding: 8px;" title="Select size">
+            <option value="compact">Compact</option>
+            <option value="bold" selected>Bold</option>
+            <option value="large">Large</option>
+          </select>
+          <select id="border-style" style="padding: 8px;" title="Select border style">
+            <option value="thin">Thin Border</option>
+            <option value="medium" selected>Medium Border</option>
+            <option value="thick">Thick Border</option>
+          </select>
+        </div>
+        
+        <div class="controls">
+          <button id="btn-download-png" style="padding: 8px; cursor: pointer;">Download PNG</button>
+          <button id="btn-download-csv" style="padding: 8px; cursor: pointer;">Download CSV</button>
+          <button id="btn-download-html" style="padding: 8px; cursor: pointer;">Download HTML</button>
+        </div>
+
+        <canvas id="signCanvas"></canvas>
+
+        <div id="stats">
+          <div>
+            Text: <strong id="text-count">0</strong> | 
+            Background: <strong id="bg-count">0</strong> | 
+            Border: <strong id="border-count">0</strong>
+          </div>
+          <div id="dimensions" style="margin-top: 5px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/main.js"></script>
+  </body>
 </html>
