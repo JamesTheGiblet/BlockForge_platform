@@ -163,20 +163,11 @@ export default class SignStudio {
   updateStats() {
     if (!this.brickLayout) return;
 
-    let textCount = 0;
-    let borderCount = 0;
-    let bgCount = 0;
-
-    // Count bricks by type
-    this.brickLayout.bricks.forEach(brick => {
-      if (ColorUtils.equals(brick.color, this.textColor)) {
-        textCount++;
-      } else if (ColorUtils.equals(brick.color, this.borderColor)) {
-        borderCount++;
-      } else {
-        bgCount++;
-      }
-    });
+    // Count bricks by source type
+    const typeCounts = this.brickLayout.getSourceTypeCounts();
+    const textCount = typeCounts.text || 0;
+    const bgCount = typeCounts.background || 0;
+    const borderCount = typeCounts.border || 0;
 
     // Update UI
     const textCountEl = document.getElementById('text-count');

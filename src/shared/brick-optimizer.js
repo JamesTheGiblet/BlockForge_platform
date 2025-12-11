@@ -2,11 +2,12 @@
  * Brick - Represents a single LEGO brick
  */
 export class Brick {
-  constructor(type, position, color, rotation = 0) {
-    this.type = type;           // e.g., 'brick-1x2', 'tile-1x1'
-    this.position = position;   // { x, y, z }
-    this.color = color;         // { r, g, b }
+  constructor(type, position, color, rotation = 0, sourceType = null) {
+    this.type = type;           // brick-1x2, tile-1x1, etc
+    this.position = position;   // {x, y, z}
+    this.color = color;         // {r, g, b}
     this.rotation = rotation;   // 0, 90, 180, 270
+    this.sourceType = sourceType; // 'text', 'border', 'background', etc
   }
 
   /**
@@ -28,6 +29,18 @@ export class Brick {
  * BrickLayout - Collection of bricks with metadata
  */
 export class BrickLayout {
+    /**
+     * Get counts by source type
+     */
+    getSourceTypeCounts() {
+      const counts = {};
+      this.bricks.forEach(brick => {
+        if (brick.sourceType) {
+          counts[brick.sourceType] = (counts[brick.sourceType] || 0) + 1;
+        }
+      });
+      return counts;
+    }
   constructor() {
     this.bricks = [];
   }
@@ -184,7 +197,8 @@ export class BrickOptimizer {
               size.type,
               { x: worldX, y: worldY, z: 0 },
               voxel.color,
-              0
+              0,
+              voxel.type // Pass through the source type
             );
             layout.addBrick(brick);
 
@@ -206,7 +220,8 @@ export class BrickOptimizer {
             'tile-1x1',
             { x: worldX, y: worldY, z: 0 },
             voxel.color,
-            0
+            0,
+            voxel.type // Pass through the source type
           );
           layout.addBrick(brick);
           occupied[y][x] = true;
