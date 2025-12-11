@@ -1,11 +1,18 @@
 import pluginLoader from './core/plugin-loader.js';
 import { UIGenerator } from '@/core/ui-generator.js';
+import './theme/main.css';
+import { initializeThemeSwitcher } from './theme/theme-switcher.js';
+import { initializeLandingPage } from './core/landing-page.js';
 
 /**
  * Initialize BlockForge Platform
  */
 async function init() {
   console.log('🏗️  BlockForge Platform Starting...\n');
+
+  // Initialize UI components
+  initializeThemeSwitcher();
+  initializeLandingPage();
 
   // Load plugin registry
   const registry = await pluginLoader.loadRegistry();

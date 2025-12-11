@@ -1,0 +1,21 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+<style>
+    .cube {
+        --color-top: #FF8A65;
+        --color-left: #FF5722;
+        --color-right: #E64A19;
+    }
+    @media (prefers-color-scheme: dark) {
+        .cube {
+            --color-top: #FF7043;
+            --color-left: #F4511E;
+            --color-right: #D84315;
+        }
+    }
+</style>
+<g class="cube">
+    <path d="M32 4.00003L4.00003 20L32 36L60 20L32 4.00003Z" fill="var(--color-top)"/>
+    <path d="M4.00003 20V44L32 60V36L4.00003 20Z" fill="var(--color-left)"/>
+    <path d="M32 60L60 44V20L32 36V60Z" fill="var(--color-right)"/>
+</g>
+</svg>

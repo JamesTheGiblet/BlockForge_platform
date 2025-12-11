@@ -1,53 +1,168 @@
 <!DOCTYPE html>
-<!-- BlockForge Platform -->
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>BlockForge Platform</title>
-    <style>
-      body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; background: #f0f2f5; }
-      h1 { color: #1b2a34; }
-      .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-      .controls { margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 4px; display: flex; gap: 10px; align-items: center; }
-      canvas { border: 1px solid #ddd; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-      #stats { margin-top: 10px; font-size: 0.9em; color: #666; }
-      .plugin-controls { display: none; }
-      .plugin-controls.active { display: flex; }
-    </style>
-  </head>
-  <body>
-    <h1>BlockForge Platform</h1>
-    
-    <div class="container">
-      <div id="plugin-list"></div>
-      
-      <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
-
-      <!-- Plugin UI Container -->
-      <div id="workspace">
-        <!-- Dynamic Controls Container -->
-        <div id="dynamic-controls"></div>
-        
-        <div class="controls">
-          <button id="btn-download-png" style="padding: 8px; cursor: pointer;">Download PNG</button>
-          <button id="btn-download-csv" style="padding: 8px; cursor: pointer;">Download CSV</button>
-          <button id="btn-download-html" style="padding: 8px; cursor: pointer;">Download HTML</button>
-        </div>
-
-        <canvas id="signCanvas"></canvas>
-
-        <div id="stats">
-          <div>
-            <span id="stat-label-1">Text</span>: <strong id="text-count">0</strong> | 
-            <span id="stat-label-2">Background</span>: <strong id="bg-count">0</strong> | 
-            <span id="stat-label-3">Border</span>: <strong id="border-count">0</strong>
-          </div>
-          <div id="dimensions" style="margin-top: 5px;"></div>
-        </div>
-      </div>
+<head>
+    <link rel="icon" type="image/png" href="/icon.png">
+    <meta name="description" content="BlockForge Studio: Transform your ideas into buildable LEGO-compatible creations. 3D models, mosaics, QR codes, and more - all in your browser.">
+    <meta name="keywords" content="LEGO, builder, 3D, mosaic, QR code, custom bricks, voxel">
+    <meta property="og:title" content="BlockForge Studio - Build. Paint. Create.">
+    <meta property="og:description" content="The complete web suite for creating custom LEGO-compatible products.">
+    <!-- Open Graph image requires an absolute URL to work on social media -->
+    <meta property="og:image" content="https://your-domain.com/assets/preview.jpg">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlockForge Studio - Build. Paint. Create.</title>
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Work+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="preloader">
+        <img src="assets/preview.jpg" alt="Loading..." style="width:80px;height:80px;border-radius:16px;box-shadow:0 2px 12px #0002;">
+    </div>
+    <!-- Navigation -->
+    <div class="nav-hub">
+        <button id="theme-toggle" class="theme-toggle-btn" title="Toggle theme" aria-label="Toggle theme">🌙</button>
+        <div class="nav-hub-title">BLOCK<span>FORGE</span></div>
+        <button onclick="location.href='gallery.html'" class="nav-hub-btn">Gallery</button>
     </div>
 
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <img src="/icon.png" alt="BlockForge Icon" style="width:180px;height:180px;margin-bottom:32px;display:block;margin-left:auto;margin-right:auto;">
+            <h1>BlockForge Studio</h1>
+            <p class="tagline">Build. Paint. Create.</p>
+            <p class="subtitle">The complete web suite for creating custom LEGO-compatible products. From 3D models to functional QR codes—transform your ideas into buildable reality.</p>
+            <div class="cta-buttons">
+                <a href="#studio-section" class="cta-primary">Start Building</a>
+                <a href="#features" class="cta-secondary">Learn More</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Studio Workspace (App) -->
+    <section id="studio-section" class="features-section" style="padding-top: 0;">
+        <div class="features-container">
+            <div class="section-header">
+                <h2>Active Studio</h2>
+                <p>Select a tool to begin creating</p>
+                <img src="/icon.png" alt="BlockForge Icon" style="width:80px;height:80px;display:block;margin:24px auto 0 auto;">
+            </div>
+            
+            <!-- Plugin Selector -->
+            <div id="plugin-list" class="footer-links" style="justify-content: center; margin-bottom: 2rem;"></div>
+
+            <!-- Workspace -->
+            <div id="workspace" class="tool-card" style="cursor: default; transform: none; opacity: 1;">
+                <div id="dynamic-controls"></div>
+                
+                <div class="controls" style="margin-top: 1rem; display: flex; gap: 1rem; justify-content: center;">
+                    <button id="btn-download-png" class="cta-secondary" style="color: var(--text-primary); border-color: var(--border-primary);">Download PNG</button>
+                    <button id="btn-download-csv" class="cta-secondary" style="color: var(--text-primary); border-color: var(--border-primary);">Download CSV</button>
+                    <button id="btn-download-html" class="cta-secondary" style="color: var(--text-primary); border-color: var(--border-primary);">Download HTML</button>
+                </div>
+
+                <canvas id="signCanvas" style="max-width: 100%; border-radius: 8px; margin: 2rem auto; display: block; box-shadow: var(--shadow-primary);"></canvas>
+
+                <div id="stats" class="stats-container" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-top: 2rem;">
+                    <div class="stat-item" style="opacity: 1; animation: none;">
+                        <div class="stat-number" id="text-count">0</div>
+                        <div class="stat-label" id="stat-label-1">Text</div>
+                    </div>
+                    <div class="stat-item" style="opacity: 1; animation: none;">
+                        <div class="stat-number" id="bg-count">0</div>
+                        <div class="stat-label" id="stat-label-2">Background</div>
+                    </div>
+                    <div class="stat-item" style="opacity: 1; animation: none;">
+                        <div class="stat-number" id="border-count">0</div>
+                        <div class="stat-label" id="stat-label-3">Border</div>
+                    </div>
+                </div>
+                <div id="dimensions" style="text-align: center; margin-top: 1rem; color: var(--text-muted);"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats-section">
+        <div class="stats-container">
+            <div class="stat-item">
+                <div class="stat-number">7</div>
+                <div class="stat-label">Specialized Tools</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">∞</div>
+                <div class="stat-label">Design Possibilities</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">3D</div>
+                <div class="stat-label">Interactive Preview</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">100%</div>
+                <div class="stat-label">Browser-Based</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section" id="features">
+        <div class="features-container">
+            <div class="section-header">
+                <h2>Why BlockForge?</h2>
+                <p>Professional-grade tools, browser-based simplicity</p>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-item">
+                    <div class="feature-icon-wrapper">⚡</div>
+                    <h4>Instant Generation</h4>
+                    <p>No downloads, no installations. Generate designs directly in your browser in seconds.</p>
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-icon-wrapper">📐</div>
+                    <h4>Precision Engineering</h4>
+                    <p>Optimized brick-packing algorithms ensure structural integrity and efficient part usage.</p>
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-icon-wrapper">🎨</div>
+                    <h4>Interactive Editor</h4>
+                    <p>Click to paint, rotate to view, zoom to inspect. Full 3D control at your fingertips.</p>
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-icon-wrapper">📦</div>
+                    <h4>Complete Exports</h4>
+                    <p>Get PDF instructions, CSV parts lists, STL baseplates, and PNG renders—everything you need.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-logo">BLOCK<span>FORGE</span></div>
+            <p style="color: var(--text-muted); margin-bottom: 2rem;">The complete voxel manufacturing suite for custom brick products.</p>
+            
+            <div class="footer-links">
+                <a href="#studio-section">3D Studio</a>
+                <a href="#studio-section">Mosaic</a>
+                <a href="#studio-section">Relief</a>
+                <a href="#studio-section">QR Codes</a>
+                <a href="#studio-section">Signs</a>
+                <a href="gallery.html">Gallery</a>
+            </div>
+
+            <div class="footer-bottom">
+                <p>© <span id="year"></span> BlockForge Studio by Giblets Creations. Built with ❤️ and Three.js</p>
+                <p style="margin-top: 0.5rem;">MIT License | <a href="https://github.com/yourusername/blockforge">View on GitHub</a></p>
+            </div>
+        </div>
+    </footer>
+
     <script type="module" src="/main.js"></script>
-  </body>
+</body>
 </html>

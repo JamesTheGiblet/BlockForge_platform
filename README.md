@@ -1,4 +1,3 @@
-
 # 🏗️ BlockForge Platform
 
 > **Production-grade platform for converting digital content into LEGO-compatible brick designs**
