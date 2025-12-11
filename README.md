@@ -59,7 +59,7 @@ Navigate to <http://localhost:3000> and select Sign Studio from the dropdown.
 
 ## Project Structure
 
-```
+```txt
 BlockForge_platform/
 ├── plugins/
 │   ├── sign-studio/           # Sign Studio plugin
