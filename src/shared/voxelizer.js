@@ -217,10 +217,32 @@ export class Voxelizer {
   }
 
   /**
-   * Placeholder for QR code to voxels (for future studios)
+   * Convert QR code matrix to voxel grid
+   * @param {Array<Array<number>>} qrMatrix - 2D array where 1=dark, 0=light
+   * @param {object} options - Options
    */
-  static fromQRCode(qrData, options = {}) {
-    console.warn('Voxelizer.fromQRCode not implemented yet');
-    return new VoxelGrid(32, 32, 1);
+  static fromQRCode(qrMatrix, options = {}) {
+    const {
+      fgColor = { r: 0, g: 0, b: 0 },        // Dark modules (black)
+      bgColor = { r: 255, g: 255, b: 255 }   // Light modules (white)
+    } = options;
+
+    const size = qrMatrix.length;
+    const voxelGrid = new VoxelGrid(size, size, 1);
+
+    // Convert QR matrix to voxels
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        const isDark = qrMatrix[y][x] === 1;
+        const voxel = {
+          filled: true,
+          type: isDark ? 'foreground' : 'background',
+          color: isDark ? fgColor : bgColor
+        };
+        voxelGrid.set(x, y, 0, voxel);
+      }
+    }
+
+    return voxelGrid;
   }
 }

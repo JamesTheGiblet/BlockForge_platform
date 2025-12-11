@@ -12,6 +12,8 @@
       .controls { margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 4px; display: flex; gap: 10px; align-items: center; }
       canvas { border: 1px solid #ddd; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
       #stats { margin-top: 10px; font-size: 0.9em; color: #666; }
+      .plugin-controls { display: none; }
+      .plugin-controls.active { display: flex; }
     </style>
   </head>
   <body>
@@ -24,7 +26,8 @@
 
       <!-- Plugin UI Container -->
       <div id="workspace">
-        <div class="controls">
+        <!-- Sign Studio Controls -->
+        <div id="sign-studio-controls" class="controls plugin-controls">
           <input type="text" id="text-input" placeholder="Enter text" value="BLOCKFORGE" style="padding: 8px;">
           <label for="size-select" style="font-size: 0.95em; margin-right: 5px;">Size:</label>
           <select id="size-select" style="padding: 8px;" title="Select size">
@@ -36,6 +39,23 @@
             <option value="thin">Thin Border</option>
             <option value="medium" selected>Medium Border</option>
             <option value="thick">Thick Border</option>
+          </select>
+        </div>
+
+        <!-- QR Studio Controls -->
+        <div id="qr-studio-controls" class="controls plugin-controls">
+          <label for="qr-type" style="font-size: 0.95em; margin-right: 5px;">QR Type:</label>
+          <select id="qr-type" style="padding: 8px;" title="Select QR type">
+            <option value="url">URL</option>
+            <option value="wifi">WiFi</option>
+            <option value="contact">Contact Card</option>
+            <option value="phone">Phone Number</option>
+          </select>
+          <input type="text" id="qr-data" placeholder="https://example.com" value="https://blockforge.studio" style="padding: 8px; flex-grow: 1;">
+          <label for="grid-size" style="font-size: 0.95em; margin-right: 5px;">Grid Size:</label>
+          <select id="grid-size" style="padding: 8px;" title="Select grid size">
+            <option value="32">32x32</option>
+            <option value="48">48x48</option>
           </select>
         </div>
         

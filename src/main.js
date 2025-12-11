@@ -24,7 +24,7 @@ async function init() {
     console.log(`\n🎯 Auto-loading first plugin: ${firstPlugin.name}\n`);
     
     try {
-      await pluginLoader.loadAndInit(firstPlugin.id);
+      await switchPlugin(firstPlugin.id);
       console.log('\n✅ Platform initialized successfully!');
     } catch (error) {
       console.error('\n❌ Failed to initialize plugin:', error);
@@ -33,27 +33,38 @@ async function init() {
 }
 
 /**
+ * Switch to a specific plugin
+ */
+async function switchPlugin(pluginId) {
+  // 1. Update UI controls visibility
+  document.querySelectorAll('.plugin-controls').forEach(el => {
+    el.classList.remove('active');
+  });
+
+  const activeControls = document.getElementById(`${pluginId}-controls`);
+  if (activeControls) {
+    activeControls.classList.add('active');
+  }
+
+  // 2. Load and initialize plugin
+  await pluginLoader.loadAndInit(pluginId);
+}
+
+/**
  * Display available plugins in UI
  */
 function displayPlugins(registry) {
   const pluginList = document.getElementById('plugin-list');
+  pluginList.innerHTML = '';
   
-  const html = `
-    <h2>Available Plugins (${registry.length})</h2>
-    <ul>
-      ${registry.map(plugin => `
-        <li>
-          <strong>${plugin.name}</strong> 
-          <em>(${plugin.id})</em> 
-          - v${plugin.version}
-          <br>
-          <small>${plugin.description}</small>
-        </li>
-      `).join('')}
-    </ul>
-  `;
-  
-  pluginList.innerHTML = html;
+  registry.forEach(plugin => {
+    const button = document.createElement('button');
+    button.textContent = plugin.name;
+    button.style.marginRight = '10px';
+    button.style.padding = '8px 16px';
+    button.onclick = () => switchPlugin(plugin.id);
+    pluginList.appendChild(button);
+  });
 }
 
 // Start the app

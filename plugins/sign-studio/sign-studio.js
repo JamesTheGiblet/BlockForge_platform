@@ -60,6 +60,13 @@ export default class SignStudio {
     this.update();
   }
 
+  /**
+   * Called when plugin is reactivated
+   */
+  async onActivate() {
+    this.update();
+  }
+
   bindEvents() {
     const inputs = ['text-input', 'size-select', 'border-style'];
     inputs.forEach(id => {

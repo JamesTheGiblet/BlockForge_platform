@@ -1,0 +1,7 @@
+{
+  "id": "qr-studio",
+  "name": "QR Studio",
+  "version": "1.0.0",
+  "description": "Generate scannable LEGO QR codes",
+  "entry": "qr-studio.js"
+}

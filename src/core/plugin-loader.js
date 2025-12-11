@@ -66,7 +66,8 @@ class PluginLoader {
       // Store in plugins map
       this.plugins.set(pluginId, {
         info: pluginInfo,
-        instance: pluginInstance
+        instance: pluginInstance,
+        initialized: false
       });
 
       console.log(`✅ Loaded: ${pluginInfo.name}`);
@@ -89,14 +90,27 @@ class PluginLoader {
 
     try {
       console.log(`🚀 Initializing: ${plugin.info.name}`);
+
+      if (plugin.initialized) {
+        console.log(`♻️  Plugin ${plugin.info.name} already initialized`);
+        this.currentPlugin = pluginId;
+        
+        // Trigger activation hook if available
+        if (typeof plugin.instance.onActivate === 'function') {
+          await plugin.instance.onActivate();
+        }
+        return plugin;
+      }
       
       if (typeof plugin.instance.init === 'function') {
         await plugin.instance.init();
-        this.currentPlugin = pluginId;
-        console.log(`✅ Initialized: ${plugin.info.name}`);
+        plugin.initialized = true;
       } else {
         console.warn(`⚠️  Plugin ${pluginId} has no init() method`);
       }
+      
+      this.currentPlugin = pluginId;
+      console.log(`✅ Initialized: ${plugin.info.name}`);
 
       return plugin;
     } catch (error) {

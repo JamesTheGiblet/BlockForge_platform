@@ -43,14 +43,17 @@ function scanPlugins() {
         return;
       }
 
+      // Normalize entry path (remove leading ./)
+      const entry = manifest.entry.startsWith('./') ? manifest.entry.slice(2) : manifest.entry;
+
       // Add to registry
     registry.push({
         id: manifest.id,
         name: manifest.name,
         version: manifest.version || '1.0.0',
         description: manifest.description || '',
-        entry: manifest.entry,
-        path: `../../plugins/${dir.name}/${manifest.entry}`
+        entry: entry,
+        path: `../../plugins/${dir.name}/${entry}`
       });
 
       console.log(`✅ ${manifest.name} (${manifest.id}) - v${manifest.version || '1.0.0'}`);
