@@ -1,4 +1,5 @@
 import pluginLoader from './core/plugin-loader.js';
+import { UIGenerator } from '@/core/ui-generator.js';
 
 /**
  * Initialize BlockForge Platform
@@ -14,6 +15,12 @@ async function init() {
     document.getElementById('plugin-list').innerHTML = '<p>No plugins available</p>';
     return;
   }
+
+  // Generate UI for all plugins
+  const uiGenerator = new UIGenerator('dynamic-controls');
+  registry.forEach(plugin => {
+    uiGenerator.generate(plugin);
+  });
 
   // Display available plugins
   displayPlugins(registry);

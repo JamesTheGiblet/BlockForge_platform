@@ -15,3 +15,4 @@ export { Exporters } from './exporters.js';
 // Utils
 export { ColorUtils } from './utils/color.js';
 export { FileUtils } from './utils/files.js';
+export * as LegoColors from './utils/lego-colors.js';

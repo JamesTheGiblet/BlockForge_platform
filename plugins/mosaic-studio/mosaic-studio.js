@@ -1,17 +1,18 @@
 import { 
   Voxelizer, 
   BrickOptimizer, 
-  ColorUtils,
   FileUtils,
-  Exporters
+  Exporters,
+  ColorUtils,
+  LegoColors
 } from '@shared/index.js';
-import { MOSAIC_PALETTE } from './assets/mosaic-palette.js';
 
 class MosaicStudio {
   constructor() {
     this.image = null;
     this.width = 48;
     this.colorCount = 20;
+    this.paletteCategory = 'opaque';
     this.ditherAlgorithm = 'floyd-steinberg';
     this.voxelGrid = null;
     this.brickLayout = null;
@@ -45,6 +46,9 @@ class MosaicStudio {
 
     const colorsInput = document.getElementById('colors');
     if (colorsInput) colorsInput.value = this.colorCount;
+
+    const paletteSelect = document.getElementById('mosaic-palette');
+    if (paletteSelect) paletteSelect.value = this.paletteCategory;
 
     const ditherSelect = document.getElementById('dither');
     if (ditherSelect) ditherSelect.value = this.ditherAlgorithm;
@@ -87,6 +91,14 @@ class MosaicStudio {
       });
     }
 
+    const paletteSelect = document.getElementById('mosaic-palette');
+    if (paletteSelect) {
+      paletteSelect.addEventListener('change', (e) => {
+        this.paletteCategory = e.target.value;
+        if (this.image) this.render();
+      });
+    }
+
     const ditherSelect = document.getElementById('dither');
     if (ditherSelect) {
       ditherSelect.addEventListener('change', (e) => {
@@ -104,10 +116,28 @@ class MosaicStudio {
       return;
     }
 
+    // Get colors based on selected category
+    let sourceColors;
+    if (this.paletteCategory === 'all') {
+      const ids = LegoColors.getAllColorIds();
+      sourceColors = ids.map(id => ({ id, ...LegoColors.getLegoColor(id) }));
+    } else {
+      sourceColors = LegoColors.getColorsByCategory(this.paletteCategory);
+    }
+
+    // Map to palette format expected by Voxelizer
+    const palette = sourceColors.map(c => ({
+      r: c.rgb.r,
+      g: c.rgb.g,
+      b: c.rgb.b,
+      id: c.id,
+      name: c.name
+    }));
+
     // Voxelize image
     this.voxelGrid = Voxelizer.fromImage(this.image, this.width, {
       colorCount: this.colorCount,
-      palette: MOSAIC_PALETTE,
+      palette: palette,
       similarityThreshold: 60,
       dither: this.ditherAlgorithm
     });

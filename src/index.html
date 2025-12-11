@@ -26,56 +26,8 @@
 
       <!-- Plugin UI Container -->
       <div id="workspace">
-        <!-- Sign Studio Controls -->
-        <div id="sign-studio-controls" class="controls plugin-controls">
-          <input type="text" id="text-input" placeholder="Enter text" value="BLOCKFORGE" style="padding: 8px;">
-          <label for="size-select" style="font-size: 0.95em; margin-right: 5px;">Size:</label>
-          <select id="size-select" style="padding: 8px;" title="Select size">
-            <option value="compact">Compact</option>
-            <option value="bold" selected>Bold</option>
-            <option value="large">Large</option>
-          </select>
-          <select id="border-style" style="padding: 8px;" title="Select border style">
-            <option value="thin">Thin Border</option>
-            <option value="medium" selected>Medium Border</option>
-            <option value="thick">Thick Border</option>
-          </select>
-        </div>
-
-        <!-- QR Studio Controls -->
-        <div id="qr-studio-controls" class="controls plugin-controls">
-          <label for="qr-type" style="font-size: 0.95em; margin-right: 5px;">QR Type:</label>
-          <select id="qr-type" style="padding: 8px;" title="Select QR type">
-            <option value="url">URL</option>
-            <option value="wifi">WiFi</option>
-            <option value="contact">Contact Card</option>
-            <option value="phone">Phone Number</option>
-          </select>
-          <input type="text" id="qr-data" placeholder="https://example.com" value="https://blockforge.studio" style="padding: 8px; flex-grow: 1;">
-          <label for="grid-size" style="font-size: 0.95em; margin-right: 5px;">Grid Size:</label>
-          <select id="grid-size" style="padding: 8px;" title="Select grid size">
-            <option value="32">32x32</option>
-            <option value="48">48x48</option>
-          </select>
-        </div>
-
-        <!-- Mosaic Studio Controls -->
-        <div id="mosaic-studio-controls" class="controls plugin-controls">
-          <input type="file" id="file-upload" accept="image/*" style="padding: 8px;">
-          <label for="width" style="font-size: 0.95em; margin-right: 5px;">Width:</label>
-          <input type="range" id="width" min="16" max="128" value="48" style="width: 100px;">
-          
-          <label for="colors" style="font-size: 0.95em; margin-right: 5px; margin-left: 10px;">Colors:</label>
-          <input type="range" id="colors" min="2" max="48" value="20" style="width: 100px;">
-
-          <label for="dither" style="font-size: 0.95em; margin-right: 5px; margin-left: 10px;">Dither:</label>
-          <select id="dither" style="padding: 8px;">
-            <option value="floyd-steinberg" selected>Floyd-Steinberg</option>
-            <option value="jarvis">Jarvis</option>
-            <option value="atkinson">Atkinson</option>
-            <option value="none">None</option>
-          </select>
-        </div>
+        <!-- Dynamic Controls Container -->
+        <div id="dynamic-controls"></div>
         
         <div class="controls">
           <button id="btn-download-png" style="padding: 8px; cursor: pointer;">Download PNG</button>

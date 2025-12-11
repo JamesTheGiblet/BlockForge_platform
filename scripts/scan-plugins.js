@@ -53,7 +53,8 @@ function scanPlugins() {
         version: manifest.version || '1.0.0',
         description: manifest.description || '',
         entry: entry,
-        path: `../../plugins/${dir.name}/${entry}`
+        path: `../../plugins/${dir.name}/${entry}`,
+        ui: manifest.ui
       });
 
       console.log(`✅ ${manifest.name} (${manifest.id}) - v${manifest.version || '1.0.0'}`);

@@ -55,6 +55,13 @@
 - **Lines of Code:** 350 (down from 850 in standalone)
 - **Dependencies:** QRCode.js (loaded from CDN)
 
+#### Architect Studio ✅ (MIGRATED)
+
+- **Status:** Functional (mock data)
+- **Features:** Converts building photos into brick facades
+- **Exports:** PNG, CSV, HTML
+- **Lines of Code:** 286
+
 ### Shared Library Modules
 
 All modules operational with Sign Studio:

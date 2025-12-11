@@ -2,14 +2,7 @@ import { Voxelizer } from '@shared/voxelizer.js';
 import { BrickOptimizer } from '@shared/brick-optimizer.js';
 import { Exporters } from '@shared/exporters.js';
 import { FileUtils } from '@shared/utils/files.js';
-
-// Utility for color comparison
-const ColorUtils = {
-  equals(c1, c2) {
-    if (!c1 || !c2) return false;
-    return c1.r === c2.r && c1.g === c2.g && c1.b === c2.b;
-  }
-};
+import { LegoColors } from '@shared/index.js';
 
 // Basic 5x5 font data
 const FONT_DATA = {
@@ -50,12 +43,13 @@ const fontProxy = new Proxy(FONT_DATA, {
 export default class SignStudio {
   constructor() {
     this.brickLayout = null;
-    this.textColor = { r: 27, g: 42, b: 52 }; // #1B2A34
-    this.borderColor = { r: 192, g: 57, b: 43 }; // #C0392B (Red)
-    this.bgColor = { r: 255, g: 255, b: 255 };
+    this.textColor = LegoColors.getLegoColor(11).rgb; // Black
+    this.borderColor = LegoColors.getLegoColor(5).rgb; // Red
+    this.bgColor = LegoColors.getLegoColor(1).rgb; // White
   }
 
   async init() {
+    this.populateColorSelects();
     this.bindEvents();
     this.updateLabels();
     this.update();
@@ -65,8 +59,29 @@ export default class SignStudio {
    * Called when plugin is reactivated
    */
   async onActivate() {
+    this.populateColorSelects();
     this.updateLabels();
+    
     this.update();
+  }
+
+  populateColorSelects() {
+    // Use opaque colors for signs
+    const colors = LegoColors.getColorsByCategory('opaque');
+    
+    const createOptions = (selectedId) => {
+      return colors.map(c => 
+        `<option value="${c.id}" ${c.id === selectedId ? 'selected' : ''}>${c.name}</option>`
+      ).join('');
+    };
+
+    const textSelect = document.getElementById('text-color-select');
+    const borderSelect = document.getElementById('border-color-select');
+    const bgSelect = document.getElementById('bg-color-select');
+
+    if (textSelect) textSelect.innerHTML = createOptions(11); // Default Black
+    if (borderSelect) borderSelect.innerHTML = createOptions(5); // Default Red
+    if (bgSelect) bgSelect.innerHTML = createOptions(1); // Default White
   }
 
   updateLabels() {
@@ -79,7 +94,7 @@ export default class SignStudio {
   }
 
   bindEvents() {
-    const inputs = ['text-input', 'size-select', 'border-style'];
+    const inputs = ['text-input', 'size-select', 'border-style', 'text-color-select', 'border-color-select', 'bg-color-select'];
     inputs.forEach(id => {
       const el = document.getElementById(id);
       if (el) {
@@ -92,12 +107,20 @@ export default class SignStudio {
     const textInput = document.getElementById('text-input');
     const sizeSelect = document.getElementById('size-select');
     const borderStyle = document.getElementById('border-style');
+    const textSelect = document.getElementById('text-color-select');
+    const borderSelect = document.getElementById('border-color-select');
+    const bgSelect = document.getElementById('bg-color-select');
 
     if (!textInput || !sizeSelect || !borderStyle) return;
 
     const text = textInput.value || 'BLOCK';
     const size = sizeSelect.value;
     const border = borderStyle.value;
+
+    // Update colors from selection
+    if (textSelect) this.textColor = LegoColors.getLegoColor(parseInt(textSelect.value)).rgb;
+    if (borderSelect) this.borderColor = LegoColors.getLegoColor(parseInt(borderSelect.value)).rgb;
+    if (bgSelect) this.bgColor = LegoColors.getLegoColor(parseInt(bgSelect.value)).rgb;
 
     // Map UI values to Voxelizer options
     const padding = size === 'compact' ? 1 : (size === 'large' ? 3 : 2);
@@ -109,7 +132,8 @@ export default class SignStudio {
       padding,
       borderWidth,
       color: this.textColor,
-      borderColor: this.borderColor
+      borderColor: this.borderColor,
+      backgroundColor: this.bgColor
     });
 
     // Optimize to bricks

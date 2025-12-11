@@ -4,11 +4,12 @@
  */
 
 import { 
-  Voxelizer, 
-  BrickOptimizer, 
-  ColorUtils,
+  Voxelizer,
+  BrickOptimizer,
   FileUtils,
-  Exporters
+  Exporters,
+  ColorUtils,
+  LegoColors
 } from '@shared/index.js';
 
 class QRStudio {
@@ -17,8 +18,8 @@ class QRStudio {
     this.qrType = 'url';
     this.qrData = 'https://blockforge.studio';
     this.gridSize = 32;
-    this.fgColor = { r: 0, g: 0, b: 0 };        // Black
-    this.bgColor = { r: 255, g: 255, b: 255 };  // White
+    this.fgColor = LegoColors.getLegoColor(11).rgb; // Black
+    this.bgColor = LegoColors.getLegoColor(1).rgb;  // White
     
     // Generated data
     this.qrMatrix = null;  // 2D array from QRCode.js
@@ -38,6 +39,9 @@ class QRStudio {
    */
   async init() {
     console.log('✅ QR Studio initialized');
+    
+    // Populate colors immediately
+    this.populateColorSelects();
     
     // Load QRCode.js library
     await this.loadQRCodeLibrary();
@@ -67,8 +71,27 @@ class QRStudio {
    * Called when plugin is reactivated
    */
   async onActivate() {
+    this.populateColorSelects();
     this.updateLabels();
+    
     this.render();
+  }
+
+  populateColorSelects() {
+    // Use opaque colors
+    const colors = LegoColors.getColorsByCategory('opaque');
+    
+    const createOptions = (selectedId) => {
+      return colors.map(c => 
+        `<option value="${c.id}" ${c.id === selectedId ? 'selected' : ''}>${c.name}</option>`
+      ).join('');
+    };
+
+    const fgSelect = document.getElementById('qr-fg-color');
+    const bgSelect = document.getElementById('qr-bg-color');
+
+    if (fgSelect) fgSelect.innerHTML = createOptions(11); // Default Black
+    if (bgSelect) bgSelect.innerHTML = createOptions(1);  // Default White
   }
 
   updateLabels() {
@@ -135,6 +158,23 @@ class QRStudio {
     if (gridSizeSelect) {
       gridSizeSelect.addEventListener('change', (e) => {
         this.gridSize = parseInt(e.target.value);
+        this.render();
+      });
+    }
+
+    // Color selectors
+    const fgSelect = document.getElementById('qr-fg-color');
+    if (fgSelect) {
+      fgSelect.addEventListener('change', (e) => {
+        this.fgColor = LegoColors.getLegoColor(parseInt(e.target.value)).rgb;
+        this.render();
+      });
+    }
+
+    const bgSelect = document.getElementById('qr-bg-color');
+    if (bgSelect) {
+      bgSelect.addEventListener('change', (e) => {
+        this.bgColor = LegoColors.getLegoColor(parseInt(e.target.value)).rgb;
         this.render();
       });
     }

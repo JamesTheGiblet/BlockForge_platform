@@ -15,44 +15,44 @@
         "default": "BLOCKFORGE"
       },
       {
-        "id": "text-color",
-        "type": "color",
-        "label": "Text Color",
-        "default": "#1B2A34"
-      },
-      {
-        "id": "bg-color",
-        "type": "color",
-        "label": "Background Color",
-        "default": "#FFFFFF"
-      },
-      {
-        "id": "border-color",
-        "type": "color",
-        "label": "Border Color",
-        "default": "#1B2A34"
-      },
-      {
         "id": "size-select",
         "type": "select",
-        "label": "Sign Size",
+        "label": "Size",
         "options": [
-          {"value": "compact", "label": "Compact (7 studs high)"},
-          {"value": "bold", "label": "Bold (9 studs high)"},
-          {"value": "large", "label": "Large (11 studs high)"}
+          {"value": "compact", "label": "Compact"},
+          {"value": "bold", "label": "Bold"},
+          {"value": "large", "label": "Large"}
         ],
         "default": "bold"
       },
       {
         "id": "border-style",
         "type": "select",
-        "label": "Border Style",
+        "label": "Border",
         "options": [
-          {"value": "thin", "label": "Thin (1 stud)"},
-          {"value": "medium", "label": "Medium (2 studs)"},
-          {"value": "thick", "label": "Thick (3 studs)"}
+          {"value": "thin", "label": "Thin"},
+          {"value": "medium", "label": "Medium"},
+          {"value": "thick", "label": "Thick"}
         ],
         "default": "medium"
+      },
+      {
+        "id": "text-color-select",
+        "type": "select",
+        "label": "Text",
+        "options": []
+      },
+      {
+        "id": "border-color-select",
+        "type": "select",
+        "label": "Border",
+        "options": []
+      },
+      {
+        "id": "bg-color-select",
+        "type": "select",
+        "label": "Background",
+        "options": []
       }
     ],
     "panels": [
