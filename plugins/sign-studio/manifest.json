@@ -1,0 +1,71 @@
+{
+  "id": "sign-studio",
+  "name": "Sign Studio",
+  "version": "1.0.0",
+  "description": "Create 2D horizontal LEGO signs and nameplates",
+  "entry": "sign-studio.js",
+  "ui": {
+    "tools": [
+      {
+        "id": "text-input",
+        "type": "text",
+        "label": "Text Content",
+        "placeholder": "Enter text here",
+        "maxLength": 12,
+        "default": "BLOCKFORGE"
+      },
+      {
+        "id": "text-color",
+        "type": "color",
+        "label": "Text Color",
+        "default": "#1B2A34"
+      },
+      {
+        "id": "bg-color",
+        "type": "color",
+        "label": "Background Color",
+        "default": "#FFFFFF"
+      },
+      {
+        "id": "border-color",
+        "type": "color",
+        "label": "Border Color",
+        "default": "#1B2A34"
+      },
+      {
+        "id": "size-select",
+        "type": "select",
+        "label": "Sign Size",
+        "options": [
+          {"value": "compact", "label": "Compact (7 studs high)"},
+          {"value": "bold", "label": "Bold (9 studs high)"},
+          {"value": "large", "label": "Large (11 studs high)"}
+        ],
+        "default": "bold"
+      },
+      {
+        "id": "border-style",
+        "type": "select",
+        "label": "Border Style",
+        "options": [
+          {"value": "thin", "label": "Thin (1 stud)"},
+          {"value": "medium", "label": "Medium (2 studs)"},
+          {"value": "thick", "label": "Thick (3 studs)"}
+        ],
+        "default": "medium"
+      }
+    ],
+    "panels": [
+      {
+        "id": "preview",
+        "title": "Sign Preview",
+        "type": "canvas"
+      },
+      {
+        "id": "stats",
+        "title": "Brick Count",
+        "type": "html"
+      }
+    ]
+  }
+}
