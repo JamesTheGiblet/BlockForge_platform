@@ -30,6 +30,25 @@ async function init() {
       console.error('\n❌ Failed to initialize plugin:', error);
     }
   }
+
+  // Setup global export buttons
+  setupExportButtons();
+}
+
+/**
+ * Setup global export button listeners
+ */
+function setupExportButtons() {
+  const handleExport = (format) => {
+    const plugin = pluginLoader.getCurrentPlugin();
+    if (plugin && plugin.instance && typeof plugin.instance.export === 'function') {
+      plugin.instance.export(format);
+    }
+  };
+
+  document.getElementById('btn-download-png')?.addEventListener('click', () => handleExport('png'));
+  document.getElementById('btn-download-csv')?.addEventListener('click', () => handleExport('csv'));
+  document.getElementById('btn-download-html')?.addEventListener('click', () => handleExport('html'));
 }
 
 /**

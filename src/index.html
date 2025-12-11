@@ -58,6 +58,24 @@
             <option value="48">48x48</option>
           </select>
         </div>
+
+        <!-- Mosaic Studio Controls -->
+        <div id="mosaic-studio-controls" class="controls plugin-controls">
+          <input type="file" id="file-upload" accept="image/*" style="padding: 8px;">
+          <label for="width" style="font-size: 0.95em; margin-right: 5px;">Width:</label>
+          <input type="range" id="width" min="16" max="128" value="48" style="width: 100px;">
+          
+          <label for="colors" style="font-size: 0.95em; margin-right: 5px; margin-left: 10px;">Colors:</label>
+          <input type="range" id="colors" min="2" max="48" value="20" style="width: 100px;">
+
+          <label for="dither" style="font-size: 0.95em; margin-right: 5px; margin-left: 10px;">Dither:</label>
+          <select id="dither" style="padding: 8px;">
+            <option value="floyd-steinberg" selected>Floyd-Steinberg</option>
+            <option value="jarvis">Jarvis</option>
+            <option value="atkinson">Atkinson</option>
+            <option value="none">None</option>
+          </select>
+        </div>
         
         <div class="controls">
           <button id="btn-download-png" style="padding: 8px; cursor: pointer;">Download PNG</button>
@@ -69,9 +87,9 @@
 
         <div id="stats">
           <div>
-            Text: <strong id="text-count">0</strong> | 
-            Background: <strong id="bg-count">0</strong> | 
-            Border: <strong id="border-count">0</strong>
+            <span id="stat-label-1">Text</span>: <strong id="text-count">0</strong> | 
+            <span id="stat-label-2">Background</span>: <strong id="bg-count">0</strong> | 
+            <span id="stat-label-3">Border</span>: <strong id="border-count">0</strong>
           </div>
           <div id="dimensions" style="margin-top: 5px;"></div>
         </div>

@@ -57,6 +57,7 @@ export default class SignStudio {
 
   async init() {
     this.bindEvents();
+    this.updateLabels();
     this.update();
   }
 
@@ -64,7 +65,17 @@ export default class SignStudio {
    * Called when plugin is reactivated
    */
   async onActivate() {
+    this.updateLabels();
     this.update();
+  }
+
+  updateLabels() {
+    const l1 = document.getElementById('stat-label-1');
+    const l2 = document.getElementById('stat-label-2');
+    const l3 = document.getElementById('stat-label-3');
+    if (l1) l1.textContent = 'Text';
+    if (l2) l2.textContent = 'Background';
+    if (l3) l3.textContent = 'Border';
   }
 
   bindEvents() {
@@ -75,16 +86,6 @@ export default class SignStudio {
         el.addEventListener('input', () => this.update());
       }
     });
-
-    // Export buttons
-    const btnPng = document.getElementById('btn-download-png');
-    if (btnPng) btnPng.addEventListener('click', () => this.downloadPNG());
-
-    const btnCsv = document.getElementById('btn-download-csv');
-    if (btnCsv) btnCsv.addEventListener('click', () => this.downloadCSV());
-
-    const btnHtml = document.getElementById('btn-download-html');
-    if (btnHtml) btnHtml.addEventListener('click', () => this.downloadHTML());
   }
 
   update() {
@@ -140,14 +141,16 @@ export default class SignStudio {
     // Draw bricks
     this.brickLayout.bricks.forEach(brick => {
       const { x, y } = brick.position;
+      const drawX = x - bounds.min.x;
+      const drawY = y - bounds.min.y;
       const { width: w, height: h } = brick.getDimensions();
       
       ctx.fillStyle = `rgb(${brick.color.r},${brick.color.g},${brick.color.b})`;
       ctx.strokeStyle = 'rgba(0,0,0,0.1)';
       ctx.lineWidth = 1;
       
-      ctx.fillRect(x * scale, y * scale, w * scale, h * scale);
-      ctx.strokeRect(x * scale, y * scale, w * scale, h * scale);
+      ctx.fillRect(drawX * scale, drawY * scale, w * scale, h * scale);
+      ctx.strokeRect(drawX * scale, drawY * scale, w * scale, h * scale);
 
       // Draw studs
       ctx.fillStyle = 'rgba(0,0,0,0.1)';
@@ -155,8 +158,8 @@ export default class SignStudio {
         for (let by = 0; by < h; by++) {
           ctx.beginPath();
           ctx.arc(
-            (x + bx + 0.5) * scale,
-            (y + by + 0.5) * scale,
+            (drawX + bx + 0.5) * scale,
+            (drawY + by + 0.5) * scale,
             scale * 0.3,
             0,
             Math.PI * 2
@@ -191,6 +194,23 @@ export default class SignStudio {
       const w = bounds.max.x - bounds.min.x + 1;
       const h = bounds.max.y - bounds.min.y + 1;
       dimEl.textContent = `Size: ${w} x ${h} studs`;
+    }
+  }
+
+  /**
+   * Unified export method
+   */
+  export(format) {
+    switch (format) {
+      case 'png':
+        this.downloadPNG();
+        break;
+      case 'csv':
+        this.downloadCSV();
+        break;
+      case 'html':
+        this.downloadHTML();
+        break;
     }
   }
 

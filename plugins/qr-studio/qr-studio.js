@@ -57,6 +57,8 @@ class QRStudio {
     // Setup event listeners
     this.setupEventListeners();
     
+    this.updateLabels();
+    
     // Initial render
     this.render();
   }
@@ -65,7 +67,17 @@ class QRStudio {
    * Called when plugin is reactivated
    */
   async onActivate() {
+    this.updateLabels();
     this.render();
+  }
+
+  updateLabels() {
+    const l1 = document.getElementById('stat-label-1');
+    const l2 = document.getElementById('stat-label-2');
+    const l3 = document.getElementById('stat-label-3');
+    if (l1) l1.textContent = 'Dark Modules';
+    if (l2) l2.textContent = 'Light Modules';
+    if (l3) l3.textContent = 'Border';
   }
 
   /**

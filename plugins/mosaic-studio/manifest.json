@@ -1,0 +1,57 @@
+{
+  "id": "mosaic-studio",
+  "name": "Mosaic Studio",
+  "version": "1.0.0",
+  "description": "Convert photos to LEGO mosaics with 48-color palette",
+  "entry": "mosaic-studio.js",
+  "ui": {
+    "tools": [
+      {
+        "id": "file-upload",
+        "type": "file",
+        "label": "Upload Image",
+        "accept": "image/*"
+      },
+      {
+        "id": "width",
+        "type": "range",
+        "label": "Width (studs)",
+        "min": 16,
+        "max": 128,
+        "default": 48
+      },
+      {
+        "id": "colors",
+        "type": "range",
+        "label": "Colors",
+        "min": 4,
+        "max": 48,
+        "default": 20
+      },
+      {
+        "id": "dither",
+        "type": "select",
+        "label": "Dither Algorithm",
+        "options": [
+          {"value": "floyd-steinberg", "label": "Floyd-Steinberg"},
+          {"value": "jarvis", "label": "Jarvis"},
+          {"value": "atkinson", "label": "Atkinson"},
+          {"value": "none", "label": "None"}
+        ],
+        "default": "floyd-steinberg"
+      }
+    ],
+    "panels": [
+      {
+        "id": "preview",
+        "title": "Mosaic Preview",
+        "type": "canvas"
+      },
+      {
+        "id": "stats",
+        "title": "Parts List",
+        "type": "html"
+      }
+    ]
+  }
+}
