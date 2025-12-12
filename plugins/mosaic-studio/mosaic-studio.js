@@ -23,12 +23,24 @@ class MosaicStudio {
   init() {
     console.log('✅ Mosaic Studio initialized');
     
-    this.canvas = document.getElementById('signCanvas');
+    this.canvas = document.getElementById('mosaicCanvas') || document.getElementById('signCanvas');
+    
+    if (!this.canvas) {
+      this.canvas = document.createElement('canvas');
+      this.canvas.id = 'mosaicCanvas';
+      this.canvas.style.maxWidth = '100%';
+      this.canvas.style.height = 'auto';
+      const previewArea = document.querySelector('.panel:nth-child(2)') || document.body;
+      previewArea.appendChild(this.canvas);
+    }
+
     this.ctx = this.canvas.getContext('2d');
     
     this.setupEventListeners();
     this.syncUI();
     this.updateLabels();
+
+    this.loadDefaultImage();
   }
 
   /**
@@ -106,6 +118,29 @@ class MosaicStudio {
         if (this.image) this.render();
       });
     }
+  }
+
+  loadDefaultImage() {
+    // Generate a default placeholder image
+    const canvas = document.createElement('canvas');
+    canvas.width = 100;
+    canvas.height = 100;
+    const ctx = canvas.getContext('2d');
+
+    // Simple gradient pattern
+    const gradient = ctx.createLinearGradient(0, 0, 100, 100);
+    gradient.addColorStop(0, '#FF5722'); // Lego Orange
+    gradient.addColorStop(1, '#1976D2'); // Blue
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 100, 100);
+    
+    // Create image object
+    const img = new Image();
+    img.onload = () => {
+      this.image = img;
+      this.render();
+    };
+    img.src = canvas.toDataURL();
   }
 
   render() {

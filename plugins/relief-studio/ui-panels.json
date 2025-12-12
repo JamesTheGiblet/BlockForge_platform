@@ -1,0 +1,84 @@
+[
+  {
+    "type": "panel",
+    "id": "configuration-panel",
+    "label": "Configuration",
+    "children": ["file", "width", "colors", "use3D", "invertDepth", "maxHeight", "generate"]
+  },
+  {
+    "type": "panel",
+    "id": "preview-panel",
+    "label": "3D Isometric Preview",
+    "children": [
+      {
+        "type": "canvas",
+        "id": "renderIso",
+        "class": "preview-canvas",
+        "description": "Displays the isometric 3D preview of the relief model."
+      }
+    ]
+  },
+  {
+    "type": "panel",
+    "id": "stats-panel",
+    "label": "Parts List",
+    "children": [
+      {
+        "type": "stats",
+        "id": "bom-stats",
+        "fields": [
+          {"id": "total-parts", "label": "Total Parts"},
+          {"id": "unique-colors", "label": "Unique Colors"},
+          {"id": "max-height", "label": "Max Height"}
+        ]
+      },
+      {
+        "type": "table",
+        "id": "bom-table",
+        "columns": [
+          {"id": "color", "label": "Color"},
+          {"id": "height", "label": "Height"},
+          {"id": "quantity", "label": "Quantity"}
+        ]
+      }
+    ]
+  },
+  {
+    "type": "panel",
+    "id": "instructions-panel",
+    "label": "Building Instructions",
+    "children": [
+      {
+        "type": "button",
+        "id": "printInstructions",
+        "label": "Print Instructions",
+        "icon": "🖨️"
+      },
+      {
+        "type": "button",
+        "id": "downloadCSV",
+        "label": "Export CSV",
+        "icon": "📄"
+      },
+      {
+        "type": "html",
+        "id": "instructions-container",
+        "class": "instructions-container",
+        "description": "Displays the step-by-step building instructions."
+      }
+    ]
+  },
+  {
+    "type": "panel",
+    "id": "info-panel",
+    "label": "About Relief Studio",
+    "children": [
+      {
+        "type": "html",
+        "id": "info-section",
+        "class": "info-section",
+        "description": "Displays information and tips about Relief Studio."
+      }
+    ]
+  }
+]

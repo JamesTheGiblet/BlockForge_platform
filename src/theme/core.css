@@ -1,3 +1,5 @@
+/* Note: Variables are now provided by variables.css */
+
 .nav-hub-brand {
   display: flex;
   align-items: center;
@@ -11,37 +13,6 @@
   transition: transform 0.3s ease;
 }
 .nav-hub-brand:hover .nav-icon { transform: rotate(15deg); }
-:root {
-  /* Light Theme (Default) */
-  --bg-primary: #ffffff;
-  --bg-secondary: #f8f9fa;
-  --bg-tertiary: #e9ecef;
-  --text-primary: #212529;
-  --text-secondary: #495057;
-  --text-muted: #6c757d;
-  --text-inverted: #ffffff;
-  --accent-primary: #FF5722;
-  --accent-secondary: #1A4D6D;
-  --border-primary: #dee2e6;
-  --shadow-primary: rgba(0, 0, 0, 0.1);
-  --shadow-secondary: rgba(0, 0, 0, 0.15);
-}
-
-.dark-mode {
-  /* Dark Theme */
-  --bg-primary: #121212;
-  --bg-secondary: #1e1e1e;
-  --bg-tertiary: #2d2d2d;
-  --text-primary: #ffffff;
-  --text-secondary: #cccccc;
-  --text-muted: #999999;
-  --text-inverted: #121212;
-  --accent-primary: #FF7043;
-  --accent-secondary: #4FC3F7;
-  --border-primary: #444444;
-  --shadow-primary: rgba(0, 0, 0, 0.3);
-  --shadow-secondary: rgba(0, 0, 0, 0.5);
-}
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 

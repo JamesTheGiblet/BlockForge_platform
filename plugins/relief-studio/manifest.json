@@ -1,0 +1,9 @@
+{
+  "id": "relief-studio",
+  "name": "Relief Studio",
+  "version": "1.0.0",
+  "description": "Converts 2D images into 3D LEGO bas-relief sculptures with isometric rendering and build instructions.",
+  "entry": "relief_studio.js",
+  "uiTools": "ui-tools.json",
+  "uiPanels": "ui-panels.json"
+}
