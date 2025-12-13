@@ -1,17 +1,11 @@
 import { 
   Voxelizer, 
   FileUtils, 
-  Exporters 
+  Exporters,
+  ColorUtils
 } from '../../src/shared/index.js';
 
 class ReliefStudio {
-  async onActivate() {
-    this.syncUI();
-    this.setupCanvas();
-    if (this.image) {
-      this.render();
-    }
-  }
   constructor() {
     this.image = null;
     this.width = 32;
@@ -31,7 +25,17 @@ class ReliefStudio {
     this.setupCanvas();
     this.setupEventListeners();
     this.syncUI();
+    this.updateLabels();
     this.loadDefaultImage();
+  }
+
+  async onActivate() {
+    this.syncUI();
+    this.setupCanvas();
+    this.updateLabels();
+    if (this.image) {
+      this.render();
+    }
   }
 
   syncUI() {
@@ -50,27 +54,24 @@ class ReliefStudio {
     setVal('maxHeight', this.maxHeight);
   }
 
+  updateLabels() {
+    const l1 = document.getElementById('stat-label-1');
+    const l2 = document.getElementById('stat-label-2');
+    const l3 = document.getElementById('stat-label-3');
+    if (l1) l1.textContent = 'Total Parts';
+    if (l2) l2.textContent = 'Unique Colors';
+    if (l3) l3.textContent = 'Max Height';
+  }
+
   setupCanvas() {
     // Find or create canvas
-    this.canvas = document.getElementById('renderIso');
-    const previewArea = document.querySelector('.panel:nth-child(2)') || document.body;
-
+    this.canvas = document.getElementById('signCanvas');
     if (!this.canvas) {
-      this.canvas = document.createElement('canvas');
-      this.canvas.id = 'renderIso';
-      this.canvas.style.maxWidth = '100%';
-      this.canvas.style.height = 'auto';
-      previewArea.appendChild(this.canvas);
+      console.error('❌ Canvas element not found');
+      return;
     }
     
     this.ctx = this.canvas.getContext('2d');
-
-    // Ensure this canvas is visible and others are hidden
-    if (previewArea) {
-      Array.from(previewArea.querySelectorAll('canvas')).forEach(c => {
-        c.style.display = c.id === 'renderIso' ? 'block' : 'none';
-      });
-    }
   }
 
   setupEventListeners() {
@@ -103,21 +104,6 @@ class ReliefStudio {
     attach('use3D', 'use3D');
     attach('invertDepth', 'invertDepth');
     attach('maxHeight', 'maxHeight', parseInt);
-
-    // Generate Button
-    const genBtn = document.getElementById('generate');
-    if (genBtn) {
-      genBtn.addEventListener('click', () => {
-        if (this.image) this.render();
-      });
-    }
-
-    // Exports
-    const printBtn = document.getElementById('printInstructions');
-    if (printBtn) printBtn.addEventListener('click', () => this.export('html'));
-    
-    const csvBtn = document.getElementById('downloadCSV');
-    if (csvBtn) csvBtn.addEventListener('click', () => this.export('csv'));
   }
 
   loadDefaultImage() {
@@ -203,7 +189,7 @@ class ReliefStudio {
     const baseColor = `rgb(${color.r},${color.g},${color.b})`;
 
     // Left face
-    ctx.fillStyle = darken(color, 0.8);
+    ctx.fillStyle = darken(color, 0.6);
     ctx.beginPath();
     ctx.moveTo(x - w, y);
     ctx.lineTo(x, y + h);
@@ -213,7 +199,7 @@ class ReliefStudio {
     ctx.fill();
 
     // Right face
-    ctx.fillStyle = darken(color, 0.9);
+    ctx.fillStyle = darken(color, 0.8);
     ctx.beginPath();
     ctx.moveTo(x + w, y);
     ctx.lineTo(x, y + h);
@@ -244,7 +230,6 @@ class ReliefStudio {
     let totalParts = 0;
     let maxHeight = 0;
     const colors = new Set();
-    const colorCounts = {};
 
     this.voxelGrid.forEach(voxel => {
       totalParts += voxel.height || 1; // Count plates
@@ -252,64 +237,52 @@ class ReliefStudio {
       
       const colorKey = `${voxel.color.r},${voxel.color.g},${voxel.color.b}`;
       colors.add(colorKey);
-      
-      // Track for table
-      if (!colorCounts[colorKey]) {
-        colorCounts[colorKey] = {
-            color: voxel.color,
-            count: 0,
-            heights: new Set()
-        };
-      }
-      colorCounts[colorKey].count += (voxel.height || 1);
-      colorCounts[colorKey].heights.add(voxel.height);
     });
 
     // Update Stats Panel
-    const updateText = (id, text) => {
-      const el = document.getElementById(id);
-      if (el) el.textContent = text;
-    };
+    const textCountEl = document.getElementById('text-count');
+    const bgCountEl = document.getElementById('bg-count');
+    const borderCountEl = document.getElementById('border-count');
 
-    updateText('total-parts', totalParts.toLocaleString());
-    updateText('unique-colors', colors.size);
-    updateText('max-height', maxHeight + ' plates');
+    if (textCountEl) textCountEl.textContent = totalParts.toLocaleString();
+    if (bgCountEl) bgCountEl.textContent = colors.size;
+    if (borderCountEl) borderCountEl.textContent = maxHeight + ' plates';
 
-    // Update Table
-    const table = document.getElementById('bom-table');
-    if (table) {
-        // Simple table rebuild
-        let html = `<thead><tr><th>Color</th><th>Height</th><th>Quantity</th></tr></thead><tbody>`;
-        Object.values(colorCounts).sort((a,b) => b.count - a.count).forEach(c => {
-            const rgb = `rgb(${c.color.r},${c.color.g},${c.color.b})`;
-            html += `<tr>
-                <td><span style="display:inline-block;width:12px;height:12px;background:${rgb};margin-right:8px;border:1px solid #ccc;"></span></td>
-                <td>${Array.from(c.heights).join(', ')}</td>
-                <td>${c.count}</td>
-            </tr>`;
-        });
-        html += '</tbody>';
-        table.innerHTML = html;
+    const dimEl = document.getElementById('dimensions');
+    if (dimEl) {
+      dimEl.textContent = `Size: ${this.voxelGrid.width} x ${this.voxelGrid.height} studs`;
     }
   }
 
   async export(format) {
     if (!this.voxelGrid) {
-        alert('Please generate a model first.');
-        return;
+      alert('Please generate a model first.');
+      return;
     }
 
     if (format === 'csv') {
-        // Custom CSV for relief (x,y,z)
-        let csv = 'X,Y,Height,Color(R,G,B)\n';
-        this.voxelGrid.forEach((v, x, y) => {
-            csv += `${x},${y},${v.height},"${v.color.r},${v.color.g},${v.color.b}"\n`;
-        });
-        const blob = new Blob([csv], { type: 'text/csv' });
-        FileUtils.downloadBlob(blob, 'relief-model.csv');
+      this.exportCSV();
     } else if (format === 'html') {
-        this.exportHTML();
+      this.exportHTML();
+    } else if (format === 'png') {
+      this.exportPNG();
     }
+  }
+
+  exportPNG() {
+    this.canvas.toBlob(blob => {
+      FileUtils.downloadBlob(blob, 'relief-model.png');
+    });
+  }
+
+  exportCSV() {
+    // Custom CSV for relief (x,y,height,color)
+    let csv = 'X,Y,Height,Color(R;G;B)\n';
+    this.voxelGrid.forEach((v, x, y) => {
+      csv += `${x},${y},${v.height},"${v.color.r};${v.color.g};${v.color.b}"\n`;
+    });
+    const blob = new Blob([csv], { type: 'text/csv' });
+    FileUtils.downloadBlob(blob, 'relief-model.csv');
   }
 
   exportHTML() {

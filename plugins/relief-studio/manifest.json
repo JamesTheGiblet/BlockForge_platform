@@ -2,8 +2,52 @@
   "id": "relief-studio",
   "name": "Relief Studio",
   "version": "1.0.0",
-  "description": "Converts 2D images into 3D LEGO bas-relief sculptures with isometric rendering and build instructions.",
-  "entry": "relief_studio.js",
-  "uiTools": "ui-tools.json",
-  "uiPanels": "ui-panels.json"
+  "description": "Converts 2D images into 3D LEGO bas-relief sculptures",
+  "entry": "relief-studio.js",
+  "ui": {
+    "tools": [
+      {
+        "id": "file",
+        "type": "file",
+        "label": "Source Image",
+        "accept": "image/*"
+      },
+      {
+        "id": "width",
+        "type": "range",
+        "label": "Width",
+        "min": 16,
+        "max": 64,
+        "default": 32
+      },
+      {
+        "id": "colors",
+        "type": "range",
+        "label": "Colors",
+        "min": 2,
+        "max": 32,
+        "default": 16
+      },
+      {
+        "id": "use3D",
+        "type": "checkbox",
+        "label": "Enable 3D Relief",
+        "default": true
+      },
+      {
+        "id": "invertDepth",
+        "type": "checkbox",
+        "label": "Invert Depth",
+        "default": true
+      },
+      {
+        "id": "maxHeight",
+        "type": "range",
+        "label": "Max Height",
+        "min": 1,
+        "max": 10,
+        "default": 6
+      }
+    ]
+  }
 }
