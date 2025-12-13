@@ -4,6 +4,10 @@
 > **Session**: Chat #2 (Post-migration work)  
 > **Status**: Phase 2 - 50% Complete (3/6 tasks)  
 > **Next Action**: Migrate Relief Studio (60 min)
+> **Last Updated**: December 13, 2025
+> **Session**: Chat #3 (Studio Migrations)  
+> **Status**: Phase 2 - 83% Complete (5/6 tasks)  
+> **Next Action**: Migrate 3D Studio (90 min)
 
 ---
 
@@ -51,6 +55,8 @@ git status
 | **Phase** | 2 of 4 |
 | **Tasks Complete** | 8 of 23 total (35%) |
 | **Studios Migrated** | 3 of 7 (43%) |
+| **Tasks Complete** | 10 of 23 total (43%) |
+| **Studios Migrated** | 5 of 7 (71%) |
 | **Code Reduction** | ~60% average |
 | **Time Invested** | ~2.5 hours total |
 | **Estimated Remaining** | 8-12 hours |
@@ -303,6 +309,9 @@ BlockForge_platform/
 | **Relief Studio** | ⏳ **NEXT** | 850 | ~200 | ~75% | Height maps |
 | 3D Studio | 📋 TODO | 1,400 | ~300 | ~80% | STL → voxels |
 | Architect Studio | 📋 TODO | 1,200 | ~250 | ~80% | Photos → facades |
+| Relief Studio | ✅ DONE | 850 | ~200 | ~75% | Height maps |
+| Architect Studio | ✅ DONE | 1,200 | ~250 | ~80% | Photos → facades |
+| **3D Studio** | ⏳ **NEXT** | 1,400 | ~300 | ~80% | STL → voxels |
 | Vertical Sign | 📋 TODO | 800 | ~200 | ~75% | 3D standing text |
 
 ---
@@ -311,13 +320,25 @@ BlockForge_platform/
 
 ### Task 2-4: Migrate Relief Studio (60 min)
 
+### Task 2-5b: Migrate 3D Studio (90 min)
+
 **Goal**: Convert relief.html → Relief Studio plugin with height-map processing
+**Goal**: Convert 3D models (STL/OBJ) into voxel bricks
 
 **Prerequisites**:
+
+- [ ] Add `Voxelizer.fromModel()` stub to shared library
+- [ ] Integrate Three.js for model loading/preview
 
 - [ ] Verify current studios still work (`npm run dev`)
 - [ ] Locate relief.html in original demos
 - [ ] Review audit notes for unique features
+**Steps**:
+
+1. Create `plugins/3d-studio/`
+2. Implement STL loader
+3. Implement voxelization logic (raycasting or slice method)
+4. Render 3D preview
 
 **Steps** (Follow STUDIO_TEMPLATE_GUIDE.md):
 

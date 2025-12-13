@@ -7,6 +7,7 @@ import {
 class ReliefStudio {
   async onActivate() {
     this.syncUI();
+    this.setupCanvas();
     if (this.image) {
       this.render();
     }
@@ -27,11 +28,7 @@ class ReliefStudio {
   async init() {
     console.log('✅ Relief Studio initialized');
     
-    this.canvas = document.getElementById('renderIso');
-    if (this.canvas) {
-      this.ctx = this.canvas.getContext('2d');
-    }
-
+    this.setupCanvas();
     this.setupEventListeners();
     this.syncUI();
     this.loadDefaultImage();
@@ -51,6 +48,29 @@ class ReliefStudio {
     setVal('use3D', this.use3D);
     setVal('invertDepth', this.invertDepth);
     setVal('maxHeight', this.maxHeight);
+  }
+
+  setupCanvas() {
+    // Find or create canvas
+    this.canvas = document.getElementById('renderIso');
+    const previewArea = document.querySelector('.panel:nth-child(2)') || document.body;
+
+    if (!this.canvas) {
+      this.canvas = document.createElement('canvas');
+      this.canvas.id = 'renderIso';
+      this.canvas.style.maxWidth = '100%';
+      this.canvas.style.height = 'auto';
+      previewArea.appendChild(this.canvas);
+    }
+    
+    this.ctx = this.canvas.getContext('2d');
+
+    // Ensure this canvas is visible and others are hidden
+    if (previewArea) {
+      Array.from(previewArea.querySelectorAll('canvas')).forEach(c => {
+        c.style.display = c.id === 'renderIso' ? 'block' : 'none';
+      });
+    }
   }
 
   setupEventListeners() {
