@@ -5,6 +5,12 @@ import {
 } from '../../src/shared/index.js';
 
 class ReliefStudio {
+  async onActivate() {
+    this.syncUI();
+    if (this.image) {
+      this.render();
+    }
+  }
   constructor() {
     this.image = null;
     this.width = 32;
