@@ -1,6 +1,6 @@
 [
   {
-    "type": "file-upload",
+    "type": "file",
     "id": "file",
     "label": "Source Image",
     "accept": "image/*",

@@ -1,74 +1,6 @@
   /**
-   * Relief: Convert image to VoxelGrid with per-voxel height (for 3D relief mosaics)
-   * @param {HTMLImageElement|ImageBitmap|ImageData} image
-   * @param {number} targetWidth
-   * @param {object} options - { palette, colorCount, use3D, invertDepth, maxHeight }
-   * @returns {VoxelGrid}
+   * VoxelGrid - Optimized 3D grid data structure for voxel data
    */
-  static fromImageWithRelief(image, targetWidth, options = {}) {
-    const {
-      palette = [],
-      colorCount = 20,
-      use3D = true,
-      invertDepth = true,
-      maxHeight = 6
-    } = options;
-
-    // Get ImageData
-    let imageData;
-    if (image instanceof ImageData) {
-      imageData = image;
-    } else {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      const ratio = image.height / image.width;
-      const targetHeight = Math.round(targetWidth * ratio);
-      canvas.width = targetWidth;
-      canvas.height = targetHeight;
-      ctx.drawImage(image, 0, 0, targetWidth, targetHeight);
-      imageData = ctx.getImageData(0, 0, targetWidth, targetHeight);
-    }
-
-    const { width, height } = imageData;
-    const pixels = imageData.data;
-    const voxelGrid = new VoxelGrid(width, height, 1);
-
-    // If palette is provided, use it; otherwise generate from image
-    let activePalette = palette;
-    if (palette.length === 0) {
-      activePalette = this.#generatePalette(pixels, colorCount);
-    }
-
-    // Fill voxel grid with color and height
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
-        const idx = (y * width + x) * 4;
-        const r = pixels[idx];
-        const g = pixels[idx + 1];
-        const b = pixels[idx + 2];
-        const a = pixels[idx + 3];
-        const color = { r, g, b, a };
-        const closestColor = this.#findClosestColor(color, activePalette);
-
-        // Relief height calculation (brightness to height)
-        let plates = 1;
-        if (use3D) {
-          let lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-          if (invertDepth) lum = 1.0 - lum;
-          plates = Math.max(1, Math.round(lum * maxHeight));
-        }
-
-        voxelGrid.set(x, y, 0, {
-          filled: a > 128,
-          type: 'relief',
-          color: closestColor,
-          originalColor: color,
-          height: plates
-        });
-      }
-    }
-    return voxelGrid;
-  }
 /**
  * VoxelGrid - Optimized 3D grid data structure for voxel data
  */
@@ -316,6 +248,78 @@ export class VoxelGrid {
  */
 export class Voxelizer {
   static #colorCache = new Map();
+
+  /**
+   * Relief: Convert image to VoxelGrid with per-voxel height (for 3D relief mosaics)
+   * @param {HTMLImageElement|ImageBitmap|ImageData} image
+   * @param {number} targetWidth
+   * @param {object} options - { palette, colorCount, use3D, invertDepth, maxHeight }
+   * @returns {VoxelGrid}
+   */
+  static fromImageWithRelief(image, targetWidth, options = {}) {
+    const {
+      palette = [],
+      colorCount = 20,
+      use3D = true,
+      invertDepth = true,
+      maxHeight = 6
+    } = options;
+
+    // Get ImageData
+    let imageData;
+    if (image instanceof ImageData) {
+      imageData = image;
+    } else {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const ratio = image.height / image.width;
+      const targetHeight = Math.round(targetWidth * ratio);
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
+      ctx.drawImage(image, 0, 0, targetWidth, targetHeight);
+      imageData = ctx.getImageData(0, 0, targetWidth, targetHeight);
+    }
+
+    const { width, height } = imageData;
+    const pixels = imageData.data;
+    const voxelGrid = new VoxelGrid(width, height, 1);
+
+    // If palette is provided, use it; otherwise generate from image
+    let activePalette = palette;
+    if (palette.length === 0) {
+      activePalette = this.#generatePalette(pixels, colorCount);
+    }
+
+    // Fill voxel grid with color and height
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const idx = (y * width + x) * 4;
+        const r = pixels[idx];
+        const g = pixels[idx + 1];
+        const b = pixels[idx + 2];
+        const a = pixels[idx + 3];
+        const color = { r, g, b, a };
+        const closestColor = this.#findClosestColor(color, activePalette);
+
+        // Relief height calculation (brightness to height)
+        let plates = 1;
+        if (use3D) {
+          let lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+          if (invertDepth) lum = 1.0 - lum;
+          plates = Math.max(1, Math.round(lum * maxHeight));
+        }
+
+        voxelGrid.set(x, y, 0, {
+          filled: a > 128,
+          type: 'relief',
+          color: closestColor,
+          originalColor: color,
+          height: plates
+        });
+      }
+    }
+    return voxelGrid;
+  }
 
   /**
    * Font character rendering with kerning support

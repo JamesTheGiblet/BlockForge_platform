@@ -1,4 +1,10 @@
-import { FileUtils } from '../../src/shared/index.js';
+import { 
+  Voxelizer, 
+  BrickOptimizer, 
+  FileUtils, 
+  Exporters,
+  ColorUtils 
+} from '../../src/shared/index.js';
 
 // Architectural Color Palette
 const ARCHITECTURE_PALETTE = [
@@ -17,7 +23,8 @@ export default class ArchitectStudio {
     this.canvas = null;
     this.ctx = null;
     this.houseImage = null;
-    this.lastResult = null;
+    this.voxelGrid = null;
+    this.brickLayout = null;
   }
 
   async init() {
@@ -47,10 +54,10 @@ export default class ArchitectStudio {
 
   async onActivate() {
     this.updateLabels();
-    if (this.lastResult) {
-      this.renderArchitecturalPreview(this.lastResult);
+    if (this.brickLayout) {
+      this.renderToCanvas();
     } else {
-      this.renderPlaceholder();
+      if (!this.houseImage) this.renderPlaceholder();
     }
   }
 
@@ -102,144 +109,92 @@ export default class ArchitectStudio {
   generateModel() {
     if (!this.houseImage) return;
 
-    const detailLevel = parseInt(document.getElementById('detail').value) || 7;
-    const style = document.getElementById('style').value || 'traditional';
-    const baseSize = document.getElementById('base-size').value || '12x12';
-    const includeTrees = document.getElementById('include-trees').checked;
-    const includeFence = document.getElementById('include-fence').checked;
-    
-    // Generate mock architectural model data
-    this.lastResult = this.generateMockArchitecturalModel(detailLevel, style, baseSize, includeTrees, includeFence);
-    
-    this.renderArchitecturalPreview(this.lastResult);
-    this.updateStats(this.lastResult);
-  }
+    console.log('🏗️ Generating Architect Model...');
 
-  generateMockArchitecturalModel(detailLevel, style, baseSize, includeTrees, includeFence) {
-    const baseSizes = {
-      '8x8': { bricks: 500, width: 8, weight: 2.5 },
-      '12x12': { bricks: 1200, width: 12, weight: 6 },
-      '16x16': { bricks: 2200, width: 16, weight: 11 },
-      '20x20': { bricks: 3500, width: 20, weight: 17.5 }
+    // Get settings
+    const baseSizeInput = document.getElementById('base-size');
+    const baseSize = baseSizeInput ? baseSizeInput.value : '12x12';
+    
+    // Map base size to studs (approx 32 studs = 10 inches/25cm)
+    const sizeMap = {
+      '8x8': 32,
+      '12x12': 48,
+      '16x16': 64,
+      '20x20': 80
     };
+    const width = sizeMap[baseSize] || 48;
+
+    // 1. Voxelize Image
+    this.voxelGrid = Voxelizer.fromImage(this.houseImage, width, {
+      palette: ARCHITECTURE_PALETTE,
+      colorCount: ARCHITECTURE_PALETTE.length,
+      dither: true
+    });
+
+    // 2. Optimize Bricks
+    this.brickLayout = BrickOptimizer.optimize(this.voxelGrid, {
+      allowTiles: true,
+      colorMatch: true
+    });
     
-    const baseStats = baseSizes[baseSize];
-    const brickMultiplier = 0.5 + (detailLevel * 0.1);
-    const totalBricks = Math.round(baseStats.bricks * brickMultiplier);
-    
-    // Generate mock BOM
-    const bom = [
-      { component: 'Roof Tiles', color: '#582A12', quantity: Math.round(totalBricks * 0.25) },
-      { component: 'Siding', color: '#FFFFFF', quantity: Math.round(totalBricks * 0.35) },
-      { component: 'Windows', color: '#FFFFFF', quantity: Math.round(totalBricks * 0.15) },
-      { component: 'Door', color: '#8B0000', quantity: Math.round(totalBricks * 0.05) },
-      { component: 'Foundation', color: '#808080', quantity: Math.round(totalBricks * 0.1) }
-    ];
-    
-    if (includeTrees) {
-      bom.push({ component: 'Landscaping', color: '#228B22', quantity: 84 });
-    }
-    
-    if (includeFence) {
-      bom.push({ component: 'Fence', color: '#FFFFFF', quantity: 40 });
-    }
-    
-    return {
-      totalBricks,
-      modelWidth: baseStats.width,
-      modelWeight: baseStats.weight,
-      bom,
-      style,
-      includeTrees
-    };
+    this.renderToCanvas();
+    this.updateStats();
   }
 
-  renderArchitecturalPreview(modelData) {
-    const width = this.canvas.width = 800;
-    const height = this.canvas.height = 600;
-    const ctx = this.ctx;
+  renderToCanvas() {
+    if (!this.brickLayout || !this.canvas) return;
     
-    // Clear canvas
-    ctx.clearRect(0, 0, width, height);
+    const studSize = Math.floor(800 / this.voxelGrid.width); // Scale to fit canvas width 800
+    const width = this.voxelGrid.width * studSize;
+    const height = this.voxelGrid.height * studSize;
     
-    // Background
-    ctx.fillStyle = '#f0f2f5';
-    ctx.fillRect(0, 0, width, height);
+    this.canvas.width = width;
+    this.canvas.height = height;
     
-    // Draw architectural diagram
-    const centerX = width / 2;
-    const baseY = height - 100;
-    
-    // House base
-    ctx.fillStyle = '#808080'; // Foundation
-    ctx.fillRect(centerX - 120, baseY, 240, 20);
-    
-    // Main house
-    ctx.fillStyle = '#FFFFFF'; // Siding
-    ctx.fillRect(centerX - 100, baseY - 150, 200, 150);
-    ctx.strokeStyle = '#ddd';
-    ctx.strokeRect(centerX - 100, baseY - 150, 200, 150);
-    
-    // Roof
-    ctx.fillStyle = '#582A12'; // Roof
-    ctx.beginPath();
-    ctx.moveTo(centerX - 120, baseY - 150);
-    ctx.lineTo(centerX, baseY - 220);
-    ctx.lineTo(centerX + 120, baseY - 150);
-    ctx.closePath();
-    ctx.fill();
-    
-    // Windows
-    ctx.fillStyle = '#87CEEB'; // Glass
-    ctx.fillRect(centerX - 80, baseY - 120, 30, 40); // Left window
-    ctx.fillRect(centerX + 50, baseY - 120, 30, 40); // Right window
-    
-    // Door
-    ctx.fillStyle = '#8B0000'; // Door
-    ctx.fillRect(centerX - 20, baseY - 80, 40, 80);
-    
-    // Landscaping
-    if (modelData.includeTrees) {
-      // Trees
-      ctx.fillStyle = '#8B4513'; // Trunk
-      ctx.fillRect(centerX - 160, baseY - 40, 10, 40);
-      ctx.fillRect(centerX + 150, baseY - 40, 10, 40);
-      
-      ctx.fillStyle = '#006400'; // Leaves
-      ctx.beginPath();
-      ctx.arc(centerX - 155, baseY - 60, 25, 0, Math.PI * 2);
-      ctx.arc(centerX + 155, baseY - 60, 25, 0, Math.PI * 2);
-      ctx.fill();
-      
-      // Grass
-      ctx.fillStyle = '#228B22';
-      ctx.fillRect(centerX - 200, baseY, 400, 20);
-    }
+    // Clear
+    this.ctx.fillStyle = '#f0f2f5';
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-    // Overlay text
-    ctx.font = 'bold 18px Segoe UI';
-    ctx.fillStyle = '#333';
-    ctx.textAlign = 'center';
-    ctx.fillText('Architectural Model Preview', width/2, 40);
+    // Draw bricks
+    this.brickLayout.bricks.forEach(brick => {
+      const x = brick.position.x * studSize;
+      const y = brick.position.y * studSize;
+      const w = brick.getDimensions().width * studSize;
+      const h = brick.getDimensions().height * studSize;
+      
+      this.ctx.fillStyle = `rgb(${brick.color.r},${brick.color.g},${brick.color.b})`;
+      this.ctx.fillRect(x, y, w, h);
+      
+      // Simple stud
+      this.ctx.fillStyle = 'rgba(0,0,0,0.1)';
+      this.ctx.beginPath();
+      this.ctx.arc(x + w/2, y + h/2, studSize/4, 0, Math.PI*2);
+      this.ctx.fill();
+      
+      this.ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+      this.ctx.strokeRect(x, y, w, h);
+    });
   }
 
-  updateStats(modelData) {
+  updateStats() {
+    if (!this.brickLayout) return;
+    
+    const count = this.brickLayout.getTotalBricks();
+    const bounds = this.brickLayout.getBounds();
+    const w = bounds.max.x - bounds.min.x + 1;
+    const h = bounds.max.y - bounds.min.y + 1;
+    
     const textCountEl = document.getElementById('text-count');
     const bgCountEl = document.getElementById('bg-count');
     const borderCountEl = document.getElementById('border-count');
-    const dimEl = document.getElementById('dimensions');
 
-    if (textCountEl) textCountEl.textContent = modelData.totalBricks.toLocaleString();
-    if (bgCountEl) bgCountEl.textContent = modelData.modelWidth + '"';
-    if (borderCountEl) borderCountEl.textContent = modelData.modelWeight + ' lbs';
-
-    if (dimEl) {
-      dimEl.innerHTML = `Style: <strong>${modelData.style}</strong>`;
-    }
+    if (textCountEl) textCountEl.textContent = count.toLocaleString();
+    if (bgCountEl) bgCountEl.textContent = `${w}x${h} studs`;
+    if (borderCountEl) borderCountEl.textContent = `~${(count * 0.005).toFixed(1)} lbs`;
   }
 
   export(format) {
-    if (!this.lastResult) {
+    if (!this.brickLayout) {
       alert('Please generate a model first!');
       return;
     }
@@ -261,10 +216,9 @@ export default class ArchitectStudio {
   }
 
   downloadCSV() {
-    let csv = "Component,Color,Quantity\n";
-    this.lastResult.bom.forEach(item => {
-      csv += `"${item.component}","${item.color}",${item.quantity}\n`;
-    });
+    const csv = Exporters.toCSV(this.brickLayout, {
+      includeColors: true
+    }); 
     
     const blob = new Blob([csv], {type: 'text/csv'});
     FileUtils.downloadBlob(blob, 'architectural-model-parts.csv');
@@ -273,6 +227,11 @@ export default class ArchitectStudio {
   downloadHTML() {
     const clientName = document.getElementById('client-name')?.value || 'Client';
     const address = document.getElementById('property-address')?.value || 'Address';
+    const style = document.getElementById('style')?.value || 'Custom';
+    
+    // Get parts list from layout
+    const counts = this.brickLayout.getBrickCounts();
+    const total = this.brickLayout.getTotalBricks();
     
     const html = `
       <html>
@@ -282,12 +241,12 @@ export default class ArchitectStudio {
         <hr>
         <p><strong>Client:</strong> ${clientName}</p>
         <p><strong>Property:</strong> ${address}</p>
-        <p><strong>Style:</strong> ${this.lastResult.style}</p>
-        <p><strong>Total Bricks:</strong> ${this.lastResult.totalBricks}</p>
+        <p><strong>Style:</strong> ${style}</p>
+        <p><strong>Total Bricks:</strong> ${total}</p>
         
         <h2>Parts List</h2>
         <ul>
-          ${this.lastResult.bom.map(i => `<li>${i.quantity}x ${i.component} (${i.color})</li>`).join('')}
+          ${Object.entries(counts).map(([type, qty]) => `<li>${qty}x ${type}</li>`).join('')}
         </ul>
       </body>
       </html>
