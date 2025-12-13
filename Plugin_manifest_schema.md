@@ -29,11 +29,12 @@ The plugin manifest is a JSON file that describes a BlockForge studio plugin. Ea
 ## Field Definitions
 
 ### `id` (required)
+
 - **Type:** `string`
 - **Format:** `kebab-case` (lowercase with hyphens)
 - **Purpose:** Machine-readable unique identifier used internally by the platform
 - **Example:** `"qr-studio"`, `"text-studio"`, `"architect-studio"`
-- **Rules:** 
+- **Rules:**
   - Must be unique across all plugins
   - Used for routing, file paths, and code references
   - Cannot contain spaces or special characters except hyphens
@@ -41,6 +42,7 @@ The plugin manifest is a JSON file that describes a BlockForge studio plugin. Ea
 ---
 
 ### `name` (required)
+
 - **Type:** `string`
 - **Format:** Human-readable title case
 - **Purpose:** Display name shown in the UI (navigation, headers, documentation)
@@ -53,6 +55,7 @@ The plugin manifest is a JSON file that describes a BlockForge studio plugin. Ea
 ---
 
 ### `version` (required)
+
 - **Type:** `string`
 - **Format:** Semantic versioning (`major.minor.patch`)
 - **Purpose:** Track plugin versions for compatibility and updates
@@ -67,6 +70,7 @@ The plugin manifest is a JSON file that describes a BlockForge studio plugin. Ea
 ---
 
 ### `description` (required)
+
 - **Type:** `string`
 - **Format:** One-line summary
 - **Purpose:** Brief explanation of what the plugin does
@@ -79,6 +83,7 @@ The plugin manifest is a JSON file that describes a BlockForge studio plugin. Ea
 ---
 
 ### `entry` (required)
+
 - **Type:** `string`
 - **Format:** Relative file path from plugin directory
 - **Purpose:** Points to the main JavaScript file containing the plugin implementation
@@ -89,6 +94,7 @@ The plugin manifest is a JSON file that describes a BlockForge studio plugin. Ea
   - File must export the required lifecycle hooks (see below)
 
 **File Structure Example:**
+
 ```
 /plugins/
   /qr-studio/
@@ -99,14 +105,17 @@ The plugin manifest is a JSON file that describes a BlockForge studio plugin. Ea
 ---
 
 ### `ui` (required)
+
 - **Type:** `object`
 - **Purpose:** Defines the user interface configuration for the plugin
 - **Structure:** Contains `tools` and `panels` arrays
 
 #### `ui.tools` (required)
+
 - **Type:** `array`
 - **Purpose:** Define the input controls and settings available to the user
 - **Example:**
+
 ```json
 "tools": [
   {
@@ -128,6 +137,7 @@ The plugin manifest is a JSON file that describes a BlockForge studio plugin. Ea
 ```
 
 **Tool Properties:**
+
 - `id`: Unique identifier within this plugin
 - `type`: Input type (`text`, `textarea`, `slider`, `select`, `checkbox`, `color`, `file`)
 - `label`: Display label shown to user
@@ -136,9 +146,11 @@ The plugin manifest is a JSON file that describes a BlockForge studio plugin. Ea
 - Additional properties based on type (min/max for sliders, options for selects, etc.)
 
 #### `ui.panels` (required)
+
 - **Type:** `array`
 - **Purpose:** Define the output/display areas for the plugin
 - **Example:**
+
 ```json
 "panels": [
   {
@@ -160,6 +172,7 @@ The plugin manifest is a JSON file that describes a BlockForge studio plugin. Ea
 ```
 
 **Panel Properties:**
+
 - `id`: Unique identifier within this plugin
 - `title`: Display title shown in panel header
 - `type`: Panel type (`canvas`, `table`, `text`, `pdf-viewer`, `image`, `html`)
@@ -171,6 +184,7 @@ The plugin manifest is a JSON file that describes a BlockForge studio plugin. Ea
 The JavaScript file specified in `entry` must export an object or class with these methods:
 
 ### `init()`
+
 - **Purpose:** Initialize the plugin, set up resources, load initial state
 - **Called:** Once when plugin is loaded by the platform
 - **Returns:** `void` or `Promise<void>`
@@ -181,6 +195,7 @@ The JavaScript file specified in `entry` must export an object or class with the
   - Prepare data structures
 
 ### `render()`
+
 - **Purpose:** Generate and display the 3D preview
 - **Called:** When user changes inputs or requests preview update
 - **Returns:** `void` or `Promise<void>`
@@ -191,6 +206,7 @@ The JavaScript file specified in `entry` must export an object or class with the
   - Render to Three.js canvas
 
 ### `export(format)`
+
 - **Purpose:** Generate downloadable output files
 - **Called:** When user clicks export button
 - **Parameters:**
@@ -207,7 +223,9 @@ The JavaScript file specified in `entry` must export an object or class with the
 ## Platform Assumptions
 
 ### Shared Library Access
+
 **All plugins automatically have access to the complete shared library**, including:
+
 - Voxelization engine
 - Brick optimization algorithms
 - Three.js renderer and scene management
@@ -217,7 +235,9 @@ The JavaScript file specified in `entry` must export an object or class with the
 **Why:** Simplifies plugin development. No need to declare dependencies or manage imports. If a plugin doesn't use something, it's fine—no performance penalty.
 
 ### Asset Loading
+
 **Plugins load assets freely** from the shared `/assets` directory structure:
+
 ```
 /assets/
   /fonts/
@@ -229,11 +249,13 @@ The JavaScript file specified in `entry` must export an object or class with the
 **Why:** Centralized asset management. Plugins reference assets directly without manifest declarations. Easier to share resources between plugins.
 
 ### Export Format Support
+
 **All plugins support all export formats.** The platform doesn't restrict what formats are available per plugin.
 
 **Why:** Simplifies architecture. The shared export library handles format generation. If a plugin's output doesn't make sense for certain formats (e.g., QR codes as STL), the export handler can return a graceful message.
 
 ### UI Structure Consistency
+
 **All plugins use the same `tools` + `panels` UI pattern.** This creates a consistent user experience across all studios.
 
 **Why:** Users learn the interface once. Platform can provide standard UI components. Future plugins inherit the familiar layout.
