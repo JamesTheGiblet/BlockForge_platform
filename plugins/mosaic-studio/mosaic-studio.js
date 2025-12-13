@@ -7,158 +7,138 @@ import {
   LegoColors
 } from '@shared/index.js';
 
-class MosaicStudio {
+// Internal state
+const DEFAULT_STATE = {
+  image: null,
+  width: 48,
+  colorLimit: 32,
+  ditheringAlgo: 'floyd-steinberg',
+  paletteCategory: 'opaque',
+  brickLayout: null,
+  isProcessing: false
+};
+
+export default class MosaicStudio {
   constructor() {
-    this.image = null;
-    this.width = 48;
-    this.colorCount = 20;
-    this.paletteCategory = 'opaque';
-    this.ditherAlgorithm = 'floyd-steinberg';
-    this.voxelGrid = null;
-    this.brickLayout = null;
+    this.state = { ...DEFAULT_STATE };
     this.canvas = null;
     this.ctx = null;
-  }
-
-  init() {
-    console.log('✅ Mosaic Studio initialized');
-    
-    this.canvas = document.getElementById('mosaicCanvas') || document.getElementById('signCanvas');
-    
-    if (!this.canvas) {
-      this.canvas = document.createElement('canvas');
-      this.canvas.id = 'mosaicCanvas';
-      this.canvas.style.maxWidth = '100%';
-      this.canvas.style.height = 'auto';
-      const previewArea = document.querySelector('.panel:nth-child(2)') || document.body;
-      previewArea.appendChild(this.canvas);
-    }
-
-    this.ctx = this.canvas.getContext('2d');
-    
-    this.setupEventListeners();
-    this.syncUI();
-    this.updateLabels();
-
-    this.loadDefaultImage();
+    this.platformApi = null;
   }
 
   /**
-   * Called when plugin is reactivated
+   * Initialize the plugin
    */
-  async onActivate() {
-    this.syncUI();
-    this.updateLabels();
-    this.render();
+  async init(api) {
+    console.log('✅ Mosaic Studio initialized');
+    
+    // Reset state to defaults when switching back to this studio
+    this.state = { ...DEFAULT_STATE };
+    this.platformApi = api;
+    
+    // Try to find the canvas defined in ui-panels.json (assuming id="mosaic-canvas" or similar)
+    // If not found, we create an off-screen one for processing/export purposes
+    this.canvas = document.getElementById('mosaic-canvas');
+    
+    if (!this.canvas) {
+      // Fallback: Create a canvas but don't attach it if the UI doesn't have a slot
+      this.canvas = document.createElement('canvas');
+      this.canvas.id = 'mosaic-canvas'; 
+    }
+    
+    this.ctx = this.canvas.getContext('2d');
+
+    // Clear canvas to ensure "Upload" placeholder is visible
+    if (this.ctx && this.canvas) {
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      this.canvas.width = 0;
+      this.canvas.height = 0;
+    }
   }
 
-  syncUI() {
-    const widthInput = document.getElementById('width');
-    if (widthInput) widthInput.value = this.width;
+  /**
+   * Handle UI tool changes
+   */
+  async onToolChange(toolId, value, api) {
+    console.log(`Tool Update: ${toolId}`, value);
 
-    const colorsInput = document.getElementById('colors');
-    if (colorsInput) colorsInput.value = this.colorCount;
-
-    const paletteSelect = document.getElementById('mosaic-palette');
-    if (paletteSelect) paletteSelect.value = this.paletteCategory;
-
-    const ditherSelect = document.getElementById('dither');
-    if (ditherSelect) ditherSelect.value = this.ditherAlgorithm;
-  }
-
-  updateLabels() {
-    const l1 = document.getElementById('stat-label-1');
-    const l2 = document.getElementById('stat-label-2');
-    const l3 = document.getElementById('stat-label-3');
-    if (l1) l1.textContent = 'Total Bricks';
-    if (l2) l2.textContent = 'Unique Colors';
-    if (l3) l3.textContent = 'Est. Cost';
-  }
-
-  setupEventListeners() {
-    const fileInput = document.getElementById('file-upload');
-    if (fileInput) {
-      fileInput.addEventListener('change', async (e) => {
-        const file = e.target.files[0];
-        if (file) {
-          this.image = await FileUtils.loadImage(file);
+    switch (toolId) {
+      case 'sourceImage':
+        if (value) {
+          // Value is likely a File object
+          this.state.image = await FileUtils.loadImage(value);
           this.render();
         }
-      });
-    }
+        break;
 
-    const widthInput = document.getElementById('width');
-    if (widthInput) {
-      widthInput.addEventListener('change', (e) => {
-        this.width = parseInt(e.target.value);
-        if (this.image) this.render();
-      });
-    }
+      case 'width':
+        this.state.width = parseInt(value, 10);
+        this.render();
+        break;
 
-    const colorsInput = document.getElementById('colors');
-    if (colorsInput) {
-      colorsInput.addEventListener('change', (e) => {
-        this.colorCount = parseInt(e.target.value);
-        if (this.image) this.render();
-      });
-    }
+      case 'colorLimit':
+        this.state.colorLimit = parseInt(value, 10);
+        this.render();
+        break;
 
-    const paletteSelect = document.getElementById('mosaic-palette');
-    if (paletteSelect) {
-      paletteSelect.addEventListener('change', (e) => {
-        this.paletteCategory = e.target.value;
-        if (this.image) this.render();
-      });
-    }
-
-    const ditherSelect = document.getElementById('dither');
-    if (ditherSelect) {
-      ditherSelect.addEventListener('change', (e) => {
-        this.ditherAlgorithm = e.target.value;
-        if (this.image) this.render();
-      });
+      case 'ditheringAlgo':
+        // Normalize string (e.g., "Floyd-Steinberg" -> "floyd-steinberg")
+        this.state.ditheringAlgo = value.toLowerCase().replace(' ', '-');
+        this.render();
+        break;
     }
   }
 
-  loadDefaultImage() {
-    // Generate a default placeholder image
-    const canvas = document.createElement('canvas');
-    canvas.width = 100;
-    canvas.height = 100;
-    const ctx = canvas.getContext('2d');
-
-    // Simple gradient pattern
-    const gradient = ctx.createLinearGradient(0, 0, 100, 100);
-    gradient.addColorStop(0, '#FF5722'); // Lego Orange
-    gradient.addColorStop(1, '#1976D2'); // Blue
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, 100, 100);
-    
-    // Create image object
-    const img = new Image();
-    img.onload = () => {
-      this.image = img;
-      this.render();
-    };
-    img.src = canvas.toDataURL();
-  }
-
-  render() {
-    console.log('🎨 Rendering mosaic');
-
-    if (!this.image) {
-      this.clearCanvas();
+  /**
+   * Handle UI actions (buttons)
+   */
+  async onAction(actionId, api) {
+    if (!this.state.brickLayout) {
+      console.warn('No mosaic generated to export');
       return;
     }
 
-    // Get colors based on selected category
-    let sourceColors;
-    if (this.paletteCategory === 'all') {
-      const ids = LegoColors.getAllColorIds();
-      sourceColors = ids.map(id => ({ id, ...LegoColors.getLegoColor(id) }));
-    } else {
-      sourceColors = LegoColors.getColorsByCategory(this.paletteCategory);
+    switch (actionId) {
+      case 'exportPng':
+        this.canvas.toBlob(blob => {
+          FileUtils.downloadBlob(blob, 'blockforge-mosaic.png');
+        });
+        break;
+
+      case 'exportCsv':
+        const csv = Exporters.toCSV(this.state.brickLayout, { includeColors: true });
+        FileUtils.downloadBlob(new Blob([csv], { type: 'text/csv' }), 'blockforge-mosaic.csv');
+        break;
+
+      case 'exportHtml':
+        const html = Exporters.toHTML(this.state.brickLayout, {
+          title: 'BlockForge Mosaic',
+          includePartsList: true
+        });
+        FileUtils.downloadBlob(new Blob([html], { type: 'text/html' }), 'blockforge-mosaic.html');
+        break;
     }
+  }
+
+  /**
+   * Core rendering logic
+   */
+  render() {
+    // Re-acquire canvas if it's missing or detached from DOM
+    if (!this.canvas || !this.canvas.isConnected) {
+      const el = document.getElementById('mosaic-canvas');
+      if (el) {
+        this.canvas = el;
+        this.ctx = this.canvas.getContext('2d');
+      }
+    }
+
+    if (!this.state.image || !this.ctx) return;
+    
+    console.log('🎨 Rendering mosaic', this.state);
+
+    // Get colors based on category (defaulting to opaque for now)
+    const sourceColors = LegoColors.getColorsByCategory(this.state.paletteCategory);
 
     // Map to palette format expected by Voxelizer
     const palette = sourceColors.map(c => ({
@@ -170,15 +150,15 @@ class MosaicStudio {
     }));
 
     // Voxelize image
-    this.voxelGrid = Voxelizer.fromImage(this.image, this.width, {
-      colorCount: this.colorCount,
+    const voxelGrid = Voxelizer.fromImage(this.state.image, this.state.width, {
+      colorCount: this.state.colorLimit,
       palette: palette,
       similarityThreshold: 60,
-      dither: this.ditherAlgorithm
+      dither: this.state.ditheringAlgo
     });
 
     // Optimize with brick bonding
-    this.brickLayout = BrickOptimizer.optimize(this.voxelGrid, {
+    this.state.brickLayout = BrickOptimizer.optimize(voxelGrid, {
       allowTiles: true,
       allowDots: false,
       colorMatch: true
@@ -189,9 +169,9 @@ class MosaicStudio {
   }
 
   renderToCanvas() {
-    if (!this.brickLayout) return;
+    if (!this.state.brickLayout || !this.canvas || !this.ctx) return;
 
-    const bounds = this.brickLayout.getBounds();
+    const bounds = this.state.brickLayout.getBounds();
     const width = bounds.max.x - bounds.min.x + 1;
     const height = bounds.max.y - bounds.min.y + 1;
     const studSize = 12;
@@ -202,7 +182,7 @@ class MosaicStudio {
     this.ctx.fillStyle = '#f8f9fa';
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-    this.brickLayout.bricks.forEach(brick => {
+    this.state.brickLayout.bricks.forEach(brick => {
       const x = (brick.position.x - bounds.min.x) * studSize;
       const y = (brick.position.y - bounds.min.y) * studSize;
       const dims = brick.getDimensions();
@@ -249,71 +229,40 @@ class MosaicStudio {
   }
 
   updateStats() {
-    if (!this.brickLayout) return;
+    if (!this.state.brickLayout) return;
+    
+    const total = this.state.brickLayout.getTotalBricks();
+    const cost = (total * 0.10).toFixed(2); // Est. $0.10 per brick
 
-    const counts = this.brickLayout.getBrickCounts();
-    const colorCounts = this.brickLayout.getColorCounts();
-    const total = this.brickLayout.getTotalBricks();
-    const costPerBrick = 0.10;
-    const totalCost = (total * costPerBrick).toFixed(2);
+    console.log(`📊 Mosaic Stats: ${total} bricks`);
 
-    const textCountEl = document.getElementById('text-count');
-    if (textCountEl) textCountEl.textContent = total.toLocaleString();
+    // Generate Parts List (BOM)
+    const parts = {};
+    this.state.brickLayout.bricks.forEach(brick => {
+      const hex = ColorUtils.rgbToHex(brick.color);
+      const dims = brick.getDimensions();
+      // Assuming standard plates, depth is usually 1
+      const size = `${dims.width}x${dims.depth || 1}`;
+      const key = `${hex}_${size}`;
 
-    const bgCountEl = document.getElementById('bg-count');
-    if (bgCountEl) bgCountEl.textContent = Object.keys(colorCounts).length;
+      if (!parts[key]) {
+        parts[key] = {
+          color: hex, // UI handles hex as color swatch
+          size: size,
+          quantity: 0
+        };
+      }
+      parts[key].quantity++;
+    });
 
-    const borderCountEl = document.getElementById('border-count');
-    if (borderCountEl) borderCountEl.textContent = '$' + totalCost;
+    const tableData = Object.values(parts).sort((a, b) => b.quantity - a.quantity);
 
-    const dimensionsEl = document.getElementById('dimensions');
-    if (dimensionsEl) {
-      const bounds = this.brickLayout.getBounds();
-      const width = bounds.max.x - bounds.min.x + 1;
-      const height = bounds.max.y - bounds.min.y + 1;
-      dimensionsEl.innerHTML = `
-        Dimensions: ${width}×${height} studs
-      `;
-    }
-
-    console.log(`📊 Mosaic: ${total} bricks`);
-  }
-
-  clearCanvas() {
-    if (!this.ctx) return;
-    this.ctx.fillStyle = '#f8f9fa';
-    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-  }
-
-  async export(format) {
-    console.log('📥 Exporting mosaic:', format);
-
-    if (!this.brickLayout) {
-      alert('Please generate a mosaic first!');
-      return;
-    }
-
-    switch (format) {
-      case 'png':
-        this.canvas.toBlob(blob => {
-          FileUtils.downloadBlob(blob, 'blockforge-mosaic.png');
-        });
-        break;
-
-      case 'csv':
-        const csv = Exporters.toCSV(this.brickLayout, { includeColors: true });
-        FileUtils.downloadBlob(new Blob([csv], { type: 'text/csv' }), 'blockforge-mosaic.csv');
-        break;
-
-      case 'html':
-        const html = Exporters.toHTML(this.brickLayout, {
-          title: 'BlockForge Mosaic',
-          includePartsList: true
-        });
-        FileUtils.downloadBlob(new Blob([html], { type: 'text/html' }), 'blockforge-mosaic.html');
-        break;
+    if (this.platformApi) {
+      this.platformApi.updateComponent('mosaic-stats', {
+        totalBricks: total,
+        estimatedCost: `$${cost}`
+      });
+      this.platformApi.updateComponent('mosaic-bom-table', tableData);
     }
   }
 }
-
-export default MosaicStudio;

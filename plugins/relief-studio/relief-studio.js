@@ -143,6 +143,14 @@ class ReliefStudio {
   }
 
   renderToCanvas() {
+    // Re-acquire canvas if it's missing or detached from DOM
+    if (!this.canvas || !this.canvas.isConnected) {
+      this.canvas = document.getElementById('signCanvas');
+      if (this.canvas) {
+        this.ctx = this.canvas.getContext('2d');
+      }
+    }
+
     if (!this.voxelGrid || !this.canvas) return;
 
     const grid = this.voxelGrid;

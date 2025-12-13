@@ -1,458 +1,218 @@
-/**
- * QR Studio Plugin
- * Creates scannable LEGO QR codes
- */
+import { FileUtils } from '@shared/index.js';
 
-import { 
-  Voxelizer,
-  BrickOptimizer,
-  FileUtils,
-  Exporters,
-  ColorUtils,
-  LegoColors
-} from '@shared/index.js';
+// Internal state
+const DEFAULT_STATE = {
+  content: 'https://blockforge.com',
+  eccLevel: 'M',
+  scale: 1,
+  fgColor: '#111111',
+  bgColor: '#f4f4f4'
+};
 
-class QRStudio {
+export default class QrStudio {
   constructor() {
-    // State
-    this.qrType = 'url';
-    this.qrData = 'https://blockforge.studio';
-    this.gridSize = 32;
-    this.fgColor = LegoColors.getLegoColor(11).rgb; // Black
-    this.bgColor = LegoColors.getLegoColor(1).rgb;  // White
-    
-    // Generated data
-    this.qrMatrix = null;  // 2D array from QRCode.js
-    this.voxelGrid = null;
-    this.brickLayout = null;
-    
-    // DOM references
+    this.state = { ...DEFAULT_STATE };
     this.canvas = null;
     this.ctx = null;
-    
-    // QRCode library
-    this.QRCode = null;
   }
 
   /**
-   * Initialize plugin
+   * Initialize the plugin
    */
-  async init() {
+  async init(api) {
     console.log('✅ QR Studio initialized');
     
-    // Populate colors immediately
-    this.populateColorSelects();
+    // Reset state to defaults when switching back to this studio
+    this.state = { ...DEFAULT_STATE };
     
-    // Load QRCode.js library
-    await this.loadQRCodeLibrary();
-    
-    // Get DOM references
-    this.canvas = document.getElementById('qrCanvas') || document.getElementById('signCanvas');
+    // Dynamically load the QRCode library
+    try {
+      // Try cdnjs first (usually more reliable for MIME types)
+      await loadScript('https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.1/qrcode.min.js');
+      console.log('📦 QRCode library loaded (cdnjs)');
+    } catch (e) {
+      console.warn('cdnjs failed, trying unpkg fallback...', e);
+      try {
+        await loadScript('https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js');
+        console.log('📦 QRCode library loaded (unpkg)');
+      } catch (e2) {
+        console.error('Failed to load QRCode library from all sources', e2);
+      }
+    }
+
+    this.canvas = document.getElementById('qr-canvas');
     if (!this.canvas) {
-      // Create canvas if it doesn't exist
       this.canvas = document.createElement('canvas');
-      this.canvas.id = 'qrCanvas';
-      const previewArea = document.querySelector('.panel:nth-child(2)') || document.body;
-      previewArea.appendChild(this.canvas);
+      this.canvas.id = 'qr-canvas';
     }
     
     this.ctx = this.canvas.getContext('2d');
     
-    // Setup event listeners
-    this.setupEventListeners();
-    
-    this.updateLabels();
-    
     // Initial render
     this.render();
+
+    // Retry render shortly after to ensure DOM is fully mounted
+    setTimeout(() => this.render(), 200);
   }
 
   /**
-   * Called when plugin is reactivated
+   * Handle UI tool changes
    */
-  async onActivate() {
-    this.populateColorSelects();
-    this.updateLabels();
-    
-    this.render();
-  }
+  async onToolChange(toolId, value, api) {
+    console.log(`QR Tool Update: ${toolId}`, value);
 
-  populateColorSelects() {
-    // Use opaque colors
-    const colors = LegoColors.getColorsByCategory('opaque');
-    
-    const createOptions = (selectedId) => {
-      return colors.map(c => 
-        `<option value="${c.id}" ${c.id === selectedId ? 'selected' : ''}>${c.name}</option>`
-      ).join('');
-    };
-
-    const fgSelect = document.getElementById('qr-fg-color');
-    const bgSelect = document.getElementById('qr-bg-color');
-
-    if (fgSelect) fgSelect.innerHTML = createOptions(11); // Default Black
-    if (bgSelect) bgSelect.innerHTML = createOptions(1);  // Default White
-  }
-
-  updateLabels() {
-    const l1 = document.getElementById('stat-label-1');
-    const l2 = document.getElementById('stat-label-2');
-    const l3 = document.getElementById('stat-label-3');
-    if (l1) l1.textContent = 'Dark Modules';
-    if (l2) l2.textContent = 'Light Modules';
-    if (l3) l3.textContent = 'Border';
-  }
-
-  /**
-   * Load QRCode.js from CDN
-   */
-  async loadQRCodeLibrary() {
-    return new Promise((resolve, reject) => {
-      // Check if already loaded
-      if (window.QRCode) {
-        console.log('✓ QRCode.js already loaded');
-        this.QRCode = window.QRCode;
-        resolve();
-        return;
-      }
-
-      console.log('⏳ Loading QRCode.js from CDN...');
-      const script = document.createElement('script');
-      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
-      script.onload = () => {
-        console.log('✓ QRCode.js loaded');
-        this.QRCode = window.QRCode;
-        resolve();
-      };
-      script.onerror = () => {
-        console.error('✗ Failed to load QRCode.js');
-        reject(new Error('Failed to load QRCode.js'));
-      };
-      document.head.appendChild(script);
-    });
-  }
-
-  /**
-   * Setup event listeners
-   */
-  setupEventListeners() {
-    // QR type selector
-    const qrTypeSelect = document.getElementById('qr-type');
-    if (qrTypeSelect) {
-      qrTypeSelect.addEventListener('change', (e) => {
-        this.qrType = e.target.value;
-        this.updatePlaceholder();
-      });
-    }
-
-    // QR data input
-    const qrDataInput = document.getElementById('qr-data');
-    if (qrDataInput) {
-      qrDataInput.addEventListener('input', (e) => {
-        this.qrData = e.target.value;
-      });
-    }
-
-    // Grid size selector
-    const gridSizeSelect = document.getElementById('grid-size');
-    if (gridSizeSelect) {
-      gridSizeSelect.addEventListener('change', (e) => {
-        this.gridSize = parseInt(e.target.value);
+    switch (toolId) {
+      case 'qrContent':
+        this.state.content = value;
         this.render();
-      });
-    }
+        break;
 
-    // Color selectors
-    const fgSelect = document.getElementById('qr-fg-color');
-    if (fgSelect) {
-      fgSelect.addEventListener('change', (e) => {
-        this.fgColor = LegoColors.getLegoColor(parseInt(e.target.value)).rgb;
+      case 'eccLevel':
+        this.state.eccLevel = value;
         this.render();
-      });
-    }
+        break;
 
-    const bgSelect = document.getElementById('qr-bg-color');
-    if (bgSelect) {
-      bgSelect.addEventListener('change', (e) => {
-        this.bgColor = LegoColors.getLegoColor(parseInt(e.target.value)).rgb;
+      case 'scale':
+        this.state.scale = parseInt(value, 10);
         this.render();
-      });
+        break;
+
+      case 'fgColor':
+        this.state.fgColor = value;
+        this.render();
+        break;
+
+      case 'bgColor':
+        this.state.bgColor = value;
+        this.render();
+        break;
     }
   }
 
   /**
-   * Update input placeholder based on QR type
+   * Handle UI actions
    */
-  updatePlaceholder() {
-    const input = document.getElementById('qr-data');
-    if (!input) return;
-
-    const placeholders = {
-      url: 'https://example.com',
-      wifi: 'WIFI:T:WPA;S:NetworkName;P:password;;',
-      contact: 'BEGIN:VCARD\nVERSION:3.0\nFN:John Doe\nTEL:555-1234\nEND:VCARD',
-      phone: 'tel:+1234567890'
-    };
-
-    input.placeholder = placeholders[this.qrType] || 'Enter data';
+  async onAction(actionId, api) {
+    switch (actionId) {
+      case 'exportPng':
+        if (this.canvas) {
+          this.canvas.toBlob(blob => {
+            FileUtils.downloadBlob(blob, 'blockforge-qr.png');
+          });
+        }
+        break;
+    }
   }
 
   /**
-   * Main render function
+   * Core rendering logic
    */
   render() {
-    console.log('🎨 Rendering QR code:', this.qrType);
-
-    if (!this.qrData || this.qrData.length === 0) {
-      this.clearCanvas();
-      return;
+    // Always try to find the live canvas in the DOM
+    const liveCanvas = document.getElementById('qr-canvas');
+    if (liveCanvas && liveCanvas !== this.canvas) {
+      this.canvas = liveCanvas;
+      this.ctx = this.canvas.getContext('2d');
+      console.log('🎨 QR Studio: Switched to live canvas');
     }
 
-    // 1. Generate QR code using QRCode.js
-    this.generateQRCode();
-  }
-
-  /**
-   * Generate QR code and convert to matrix
-   */
-  generateQRCode() {
-    // Create temporary container for QRCode.js
-    const tempDiv = document.createElement('div');
-    tempDiv.id = 'temp-qr';
-    tempDiv.style.display = 'none';
-    document.body.appendChild(tempDiv);
-
-    try {
-      // Generate QR code
-      new this.QRCode(tempDiv, {
-        text: this.qrData,
-        width: this.gridSize * 10,
-        height: this.gridSize * 10,
-        correctLevel: this.QRCode.CorrectLevel.H
-      });
-
-      // Wait for QR to render, then process
-      setTimeout(() => {
-        this.processQRCode(tempDiv);
-        document.body.removeChild(tempDiv);
-      }, 100);
-
-    } catch (error) {
-      console.error('Error generating QR code:', error);
-      document.body.removeChild(tempDiv);
-    }
-  }
-
-  /**
-   * Process QR code image to matrix
-   */
-  processQRCode(container) {
-    const qrImg = container.querySelector('img');
-    if (!qrImg) {
-      console.error('QR image not found');
-      return;
-    }
-
-    // Create temporary canvas to read pixels
-    const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = this.gridSize;
-    tempCanvas.height = this.gridSize;
-    const ctx = tempCanvas.getContext('2d');
-
-    // Disable smoothing for crisp pixels
-    ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(qrImg, 0, 0, this.gridSize, this.gridSize);
-
-    // Read pixel data
-    const imgData = ctx.getImageData(0, 0, this.gridSize, this.gridSize).data;
-    this.qrMatrix = [];
-
-    for (let y = 0; y < this.gridSize; y++) {
-      const row = [];
-      for (let x = 0; x < this.gridSize; x++) {
-        const i = (y * this.gridSize + x) * 4;
-        const isDark = imgData[i] < 128; // Dark pixel threshold
-        row.push(isDark ? 1 : 0);
+    // If we still don't have a visible canvas, schedule a retry
+    if (!this.canvas || !this.canvas.isConnected) {
+      if (!this._retryTimer) {
+        this._retryTimer = setTimeout(() => {
+          this._retryTimer = null;
+          this.render();
+        }, 100);
       }
-      this.qrMatrix.push(row);
+      return; // Stop rendering to invisible canvas
     }
 
-    // 2. Voxelize QR matrix
-    this.voxelGrid = Voxelizer.fromQRCode(this.qrMatrix, {
-      fgColor: this.fgColor,
-      bgColor: this.bgColor
-    });
+    // Ensure context exists and library is loaded
+    if (!this.ctx || !this.state.content || !window.QRCode) return;
 
-    // 3. Optimize (but force 1x1 only for QR codes)
-    this.brickLayout = BrickOptimizer.optimize(this.voxelGrid, {
-      allowTiles: true,
-      allowDots: false,
-      colorMatch: true
-    });
+    console.log('🎨 Generating QR Code', this.state);
 
-    // 4. Render to canvas
-    this.renderToCanvas();
+    // Generate QR Data
+    const qr = window.QRCode.create(this.state.content, { errorCorrectionLevel: this.state.eccLevel });
+    const modules = qr.modules; // The BitMatrix
+    const size = modules.size;  // e.g., 21, 25, etc.
 
-    // 5. Update stats
-    this.updateStats();
-  }
+    const studSize = 12;
+    const pixelSize = studSize * this.state.scale;
+    const boardSize = size * pixelSize;
 
-  /**
-   * Render brick layout to canvas
-   */
-  renderToCanvas() {
-    if (!this.brickLayout) return;
+    this.canvas.width = boardSize + (pixelSize * 2); // Add padding
+    this.canvas.height = boardSize + (pixelSize * 2);
 
-    const studSize = 20; // pixels per stud
-    const margin = 20;
-
-    // Set canvas size
-    this.canvas.width = (this.gridSize * studSize) + (margin * 2);
-    this.canvas.height = (this.gridSize * studSize) + (margin * 2);
-
-    // Clear canvas
-    this.ctx.fillStyle = '#f8f9fa';
+    // Background (White Plate)
+    this.ctx.fillStyle = this.state.bgColor;
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    
+    // Draw Modules
+    const padding = pixelSize;
+    const studRadius = studSize * 0.35;
 
-    // Draw each brick as circular stud
-    this.brickLayout.bricks.forEach(brick => {
-      const px = margin + (brick.position.x * studSize);
-      const py = margin + (brick.position.y * studSize);
-      const radius = (studSize / 2) - 1;
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        const isDark = modules.get(x, y);
+        const startX = padding + (x * pixelSize);
+        const startY = padding + (y * pixelSize);
+        const brickColor = isDark ? this.state.fgColor : this.state.bgColor;
 
-      const colorHex = ColorUtils.rgbToHex(brick.color);
+        // Draw base brick
+        this.ctx.fillStyle = brickColor;
+        this.ctx.fillRect(startX, startY, pixelSize - 1, pixelSize - 1);
 
-      // Draw circular stud body
-      this.ctx.fillStyle = colorHex;
-      this.ctx.beginPath();
-      this.ctx.arc(px + studSize/2, py + studSize/2, radius, 0, Math.PI * 2);
-      this.ctx.fill();
+        // Draw studs (handle scaling for 2x2, 3x3 etc)
+        for (let i = 0; i < this.state.scale; i++) {
+          for (let j = 0; j < this.state.scale; j++) {
+            const cx = startX + (i * studSize) + (studSize / 2);
+            const cy = startY + (j * studSize) + (studSize / 2);
 
-      // Stud highlight
-      this.ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-      this.ctx.beginPath();
-      this.ctx.arc(px + studSize/2 - 2, py + studSize/2 - 2, 2, 0, Math.PI * 2);
-      this.ctx.fill();
+            // Stud Shadow
+            this.ctx.beginPath();
+            this.ctx.arc(cx + 1, cy + 1, studRadius, 0, Math.PI * 2);
+            this.ctx.fillStyle = 'rgba(0,0,0,0.3)';
+            this.ctx.fill();
 
-      // Stud shadow
-      this.ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
-      this.ctx.beginPath();
-      this.ctx.arc(px + studSize/2 + 1, py + studSize/2 + 1, radius, 0, Math.PI * 2);
-      this.ctx.fill();
-    });
-  }
+            // Stud Top
+            this.ctx.beginPath();
+            this.ctx.arc(cx, cy, studRadius, 0, Math.PI * 2);
+            this.ctx.fillStyle = brickColor;
+            this.ctx.fill();
 
-  /**
-   * Update stats display
-   */
-  updateStats() {
-    if (!this.brickLayout) return;
-
-    const typeCounts = this.brickLayout.getSourceTypeCounts();
-    const fgCount = typeCounts.foreground || 0;
-    const bgCount = typeCounts.background || 0;
-    const totalBricks = this.brickLayout.getTotalBricks();
-    const costPerBrick = 0.06;
-    const totalCost = (totalBricks * costPerBrick).toFixed(2);
-
-    // Update DOM
-    const textCountEl = document.getElementById('text-count');
-    if (textCountEl) textCountEl.textContent = fgCount.toLocaleString();
-
-    const bgCountEl = document.getElementById('bg-count');
-    if (bgCountEl) bgCountEl.textContent = bgCount.toLocaleString();
-
-    const borderCountEl = document.getElementById('border-count');
-    if (borderCountEl) borderCountEl.textContent = '0';
-
-    const dimensionsEl = document.getElementById('dimensions');
-    if (dimensionsEl) {
-      dimensionsEl.innerHTML = `
-        Dimensions: ${this.gridSize}×${this.gridSize} studs<br>
-        Est. Cost: <strong>$${totalCost}</strong> @ $${costPerBrick.toFixed(2)}/brick
-      `;
+            // Highlight
+            this.ctx.beginPath();
+            this.ctx.arc(cx - studRadius * 0.3, cy - studRadius * 0.3, studRadius * 0.25, 0, Math.PI * 2);
+            this.ctx.fillStyle = 'rgba(255,255,255,0.4)';
+            this.ctx.fill();
+          }
+        }
+      }
     }
-
-    console.log(`📊 QR Stats: ${fgCount} dark, ${bgCount} light = ${totalBricks} total`);
-  }
-
-  /**
-   * Clear canvas
-   */
-  clearCanvas() {
-    if (!this.ctx) return;
-    this.ctx.fillStyle = '#f8f9fa';
-    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-  }
-
-  /**
-   * Export function
-   */
-  async export(format) {
-    console.log('📥 Exporting QR as:', format);
-
-    if (!this.brickLayout) {
-      alert('Please generate a QR code first!');
-      return;
-    }
-
-    switch (format) {
-      case 'png':
-        this.exportPNG();
-        break;
-
-      case 'csv':
-        this.exportCSV();
-        break;
-
-      case 'html':
-        await this.exportHTML();
-        break;
-
-      default:
-        console.error('Unknown export format:', format);
-    }
-  }
-
-  /**
-   * Export as PNG
-   */
-  exportPNG() {
-    this.canvas.toBlob(blob => {
-      const filename = `blockforge-qr-${this.qrType}.png`;
-      FileUtils.downloadBlob(blob, filename);
-    });
-  }
-
-  /**
-   * Export as CSV
-   */
-  exportCSV() {
-    const csv = Exporters.toCSV(this.brickLayout, {
-      includeColors: true
-    });
-
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const filename = `blockforge-qr-${this.qrType}-parts.csv`;
-    FileUtils.downloadBlob(blob, filename);
-  }
-
-  /**
-   * Export as HTML
-   */
-  async exportHTML() {
-    const html = Exporters.toHTML(this.brickLayout, {
-      title: `BlockForge QR Code: ${this.qrType}`,
-      includePartsList: true,
-      stepByStep: false,
-      interactive: false
-    });
-
-    const blob = new Blob([html], { type: 'text/html' });
-    const filename = `blockforge-qr-${this.qrType}-instructions.html`;
-    FileUtils.downloadBlob(blob, filename);
   }
 }
 
-// Export plugin class
-export default QRStudio;
+/**
+ * Helper to load external scripts
+ */
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    if (window.QRCode) {
+      resolve();
+      return;
+    }
+
+    // If script exists but global is missing, remove it to avoid hanging on missed events
+    const existing = document.querySelector(`script[src="${src}"]`);
+    if (existing) {
+      existing.remove();
+    }
+
+    const script = document.createElement('script');
+    script.src = src;
+    script.onload = resolve;
+    script.onerror = reject;
+    document.head.appendChild(script);
+  });
+}

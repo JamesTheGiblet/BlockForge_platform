@@ -1,0 +1,21 @@
+[
+  {
+    "id": "settings",
+    "label": "Settings",
+    "tools": [
+      "qrContent",
+      "eccLevel",
+      "scale"
+    ]
+  },
+  {
+    "id": "preview",
+    "label": "Preview",
+    "canvasId": "qr-canvas"
+  },
+  {
+    "id": "export",
+    "label": "Export",
+    "tools": ["exportPng"]
+  }
+]
