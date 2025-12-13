@@ -1,4 +1,4 @@
-import { FileUtils, Exporters } from '@shared/index.js';
+import { FileUtils } from '../../src/shared/index.js';
 
 // Architectural Color Palette
 const ARCHITECTURE_PALETTE = [
@@ -22,8 +22,17 @@ export default class ArchitectStudio {
 
   async init() {
     console.log('✅ Architect Studio initialized');
-    this.canvas = document.getElementById('signCanvas');
-    this.ctx = this.canvas.getContext('2d');
+    // Try to find the canvas using common IDs
+    this.canvas = document.getElementById('architectCanvas') || 
+                  document.getElementById('preview') || 
+                  document.getElementById('signCanvas');
+                  
+    if (this.canvas) {
+      this.ctx = this.canvas.getContext('2d');
+    } else {
+      console.error('❌ Architect Studio: Canvas element not found. Check manifest.json panel ID.');
+      return;
+    }
     
     // Set default date
     const dateInput = document.getElementById('closing-date');

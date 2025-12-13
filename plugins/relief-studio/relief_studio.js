@@ -2,7 +2,7 @@ import {
   Voxelizer, 
   FileUtils, 
   Exporters 
-} from '@shared/index.js';
+} from '../../src/shared/index.js';
 
 class ReliefStudio {
   constructor() {
@@ -28,6 +28,7 @@ class ReliefStudio {
 
     this.setupEventListeners();
     this.syncUI();
+    this.loadDefaultImage();
   }
 
   syncUI() {
@@ -91,6 +92,27 @@ class ReliefStudio {
     
     const csvBtn = document.getElementById('downloadCSV');
     if (csvBtn) csvBtn.addEventListener('click', () => this.export('csv'));
+  }
+
+  loadDefaultImage() {
+    // Create a simple heightmap gradient for initial preview
+    const canvas = document.createElement('canvas');
+    canvas.width = 100;
+    canvas.height = 100;
+    const ctx = canvas.getContext('2d');
+    
+    const grad = ctx.createRadialGradient(50, 50, 0, 50, 50, 50);
+    grad.addColorStop(0, 'white'); // High
+    grad.addColorStop(1, 'black'); // Low
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 100, 100);
+
+    const img = new Image();
+    img.onload = () => {
+      this.image = img;
+      this.render();
+    };
+    img.src = canvas.toDataURL();
   }
 
   render() {
@@ -245,7 +267,7 @@ class ReliefStudio {
     }
   }
 
-  export(format) {
+  async export(format) {
     if (!this.voxelGrid) {
         alert('Please generate a model first.');
         return;
@@ -260,10 +282,103 @@ class ReliefStudio {
         const blob = new Blob([csv], { type: 'text/csv' });
         FileUtils.downloadBlob(blob, 'relief-model.csv');
     } else if (format === 'html') {
-        // Use Exporters or custom HTML
-        // For now, simple alert or reuse Exporters if adaptable
-        alert('HTML export coming soon for Relief Studio');
+        this.exportHTML();
     }
+  }
+
+  exportHTML() {
+    if (!this.voxelGrid) return;
+    
+    const grid = this.voxelGrid;
+    const w = grid.width;
+    const h = grid.height;
+    const scale = 20;
+    
+    // Find max height
+    let maxH = 0;
+    grid.forEach(v => { if(v.height > maxH) maxH = v.height; });
+
+    let htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+<title>BlockForge Relief Instructions</title>
+<style>
+  body { font-family: 'Segoe UI', sans-serif; padding: 20px; max-width: 1000px; margin: 0 auto; background: #f5f5f5; }
+  .header { text-align: center; margin-bottom: 30px; }
+  .layer-card { background: white; padding: 20px; margin-bottom: 30px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); page-break-inside: avoid; }
+  .layer-img { width: 100%; image-rendering: pixelated; border: 1px solid #eee; }
+  .stats { font-size: 0.9em; color: #666; margin-top: 10px; }
+  @media print { body { background: white; } .layer-card { box-shadow: none; border: 1px solid #ccc; } }
+</style>
+</head>
+<body>
+  <div class="header">
+    <h1>Relief Build Instructions</h1>
+    <p>Size: ${w}x${h} • Max Height: ${maxH} plates</p>
+  </div>
+`;
+
+    // Generate layers
+    for (let layer = 1; layer <= maxH; layer++) {
+      const canvas = document.createElement('canvas');
+      canvas.width = w * scale;
+      canvas.height = h * scale;
+      const ctx = canvas.getContext('2d');
+      
+      // White background
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      let count = 0;
+      
+      // Draw grid
+      ctx.strokeStyle = '#f0f0f0';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      for(let x=0; x<=w; x++) { ctx.moveTo(x*scale, 0); ctx.lineTo(x*scale, h*scale); }
+      for(let y=0; y<=h; y++) { ctx.moveTo(0, y*scale); ctx.lineTo(w*scale, y*scale); }
+      ctx.stroke();
+
+      // Draw bricks
+      for(let y=0; y<h; y++) {
+        for(let x=0; x<w; x++) {
+          const v = grid.get(x, y, 0);
+          if (!v || !v.filled) continue;
+          
+          if (v.height >= layer) {
+            // Place brick here
+            ctx.fillStyle = `rgb(${v.color.r},${v.color.g},${v.color.b})`;
+            ctx.fillRect(x*scale + 1, y*scale + 1, scale - 2, scale - 2);
+            
+            // Stud
+            ctx.fillStyle = 'rgba(255,255,255,0.3)';
+            ctx.beginPath();
+            ctx.arc(x*scale + scale/2, y*scale + scale/2, scale/3, 0, Math.PI*2);
+            ctx.fill();
+            
+            count++;
+          } else {
+            // Previous layer ghost
+            ctx.fillStyle = '#eee';
+            ctx.fillRect(x*scale + 1, y*scale + 1, scale - 2, scale - 2);
+          }
+        }
+      }
+      
+      const dataUrl = canvas.toDataURL('image/png');
+      htmlContent += `
+  <div class="layer-card">
+    <h2>Step ${layer} <span style="font-weight:normal; font-size:0.8em; color:#666;">(Layer ${layer})</span></h2>
+    <img src="${dataUrl}" class="layer-img">
+    <div class="stats">Parts in this step: <strong>${count}</strong></div>
+  </div>`;
+    }
+
+    htmlContent += '</body></html>';
+    
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    FileUtils.downloadBlob(blob, 'relief-instructions.html');
   }
 }
 
