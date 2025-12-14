@@ -1,0 +1,30 @@
+{
+  "id": "3d-studio",
+  "name": "3D Studio",
+  "version": "1.0.0",
+  "description": "Design 3D brick models (Bear, Penguin, Custom)",
+  "entry": "3d-studio.js",
+  "ui": {
+    "tools": [
+      {
+        "id": "model-select",
+        "type": "select",
+        "label": "Base Model",
+        "options": [
+          { "value": "bear", "label": "Teddy Bear" },
+          { "value": "penguin", "label": "Penguin" },
+          { "value": "cube", "label": "Test Cube" }
+        ],
+        "default": "bear"
+      },
+      { "id": "brick-color", "type": "color", "label": "Paint Color", "default": "#E53935" },
+      { "id": "layer-view", "type": "range", "label": "Layer View", "min": 0, "max": 65, "default": 65 },
+      { "id": "json-upload", "type": "file", "label": "Import JSON", "accept": ".json" },
+      { "id": "stl-upload", "type": "file", "label": "Import STL", "accept": ".stl" }
+    ],
+    "panels": [
+      { "id": "preview", "title": "3D Designer", "type": "html" },
+      { "id": "stats", "title": "Parts List", "type": "html" }
+    ]
+  }
+}

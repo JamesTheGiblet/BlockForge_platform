@@ -1,7 +1,6 @@
 // src/shared/index.js
-// Barrel export for shared library
-export * from './voxelizer.js';
-export * from './brick-optimizer.js';
-export * from './exporters.js';
-export * from './utils/color.js';
-export * from './utils/files.js';
+export { Voxelizer } from './voxelizer.js';
+export { BrickOptimizer, Brick, BrickLayout } from './brick-optimizer.js';
+export { Exporters } from './exporters.js'; // 👈 NEW
+export { ColorUtils } from './utils/color.js';
+export { FileUtils } from './utils/files.js';

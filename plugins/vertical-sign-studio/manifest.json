@@ -1,0 +1,19 @@
+{
+  "id": "vertical-sign-studio",
+  "name": "Vertical Sign Studio",
+  "version": "1.0.0",
+  "description": "Create self-standing 3D brick signs",
+  "entry": "vertical-sign-studio.js",
+  "ui": {
+    "tools": [
+      { "id": "text-input", "type": "text", "label": "Sign Text (Max 10)", "default": "BFS", "placeholder": "BFS" },
+      { "id": "text-color", "type": "color", "label": "Text Color", "default": "#1B2A34" },
+      { "id": "bg-color", "type": "color", "label": "Background", "default": "#FFFFFF" },
+      { "id": "sign-height", "type": "range", "label": "Height (Bricks)", "min": 2, "max": 6, "default": 3 }
+    ],
+    "panels": [
+      { "id": "preview", "title": "3D Preview", "type": "html" }, 
+      { "id": "stats", "title": "Build Stats", "type": "html" }
+    ]
+  }
+}

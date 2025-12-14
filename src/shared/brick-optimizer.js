@@ -31,13 +31,36 @@ export class BrickOptimizer {
         const height = voxelGrid.height;
         const width = voxelGrid.width;
 
-        // Basic 1x1 optimization
+        // Greedy optimization: Merge adjacent 1x1s into 1xN strips
         for (let y = 0; y < height; y++) {
+            let currentStart = -1;
+            let currentColor = null;
+
             for (let x = 0; x < width; x++) {
                 const color = grid[y][x];
-                if (color) {
-                    layout.add(new Brick(x, y, 0, 1, 1, color, 'plate-1x1'));
+                
+                // Check if we match the current strip
+                const isMatch = currentColor && color && (color.hex === currentColor.hex);
+
+                if (currentStart !== -1 && !isMatch) {
+                    // End current strip
+                    const w = x - currentStart;
+                    layout.add(new Brick(currentStart, y, 0, w, 1, currentColor, `plate-1x${w}`));
+                    currentStart = -1;
+                    currentColor = null;
                 }
+
+                if (color && currentStart === -1) {
+                    // Start new strip
+                    currentStart = x;
+                    currentColor = color;
+                }
+            }
+            
+            // End of row check
+            if (currentStart !== -1) {
+                const w = width - currentStart;
+                layout.add(new Brick(currentStart, y, 0, w, 1, currentColor, `plate-1x${w}`));
             }
         }
         

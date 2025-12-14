@@ -1,0 +1,19 @@
+{
+  "id": "relief-studio",
+  "name": "Relief Studio",
+  "version": "1.0.0",
+  "description": "Convert images into 3D topographical reliefs",
+  "entry": "relief-studio.js",
+  "ui": {
+    "tools": [
+      { "id": "upload-image", "type": "file", "label": "Source Image", "accept": "image/*" },
+      { "id": "width", "type": "range", "label": "Width (Studs)", "min": 16, "max": 64, "default": 32 },
+      { "id": "max-height", "type": "range", "label": "Max Height (Plates)", "min": 1, "max": 12, "default": 6 },
+      { "id": "invert-depth", "type": "checkbox", "label": "Invert (Dark = High)", "default": true }
+    ],
+    "panels": [
+      { "id": "preview", "title": "Isometric Preview", "type": "canvas" },
+      { "id": "stats", "title": "Build Stats", "type": "html" }
+    ]
+  }
+}

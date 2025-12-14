@@ -1,0 +1,53 @@
+{
+  "id": "pendant-studio",
+  "name": "Pendant Studio",
+  "version": "1.0.0",
+  "description": "Design custom LEGO jewelry and baseplates",
+  "entry": "pendant-studio.js",
+  "ui": {
+    "tools": [
+      { "id": "initials", "type": "text", "label": "Initials (1-4)", "default": "AB", "placeholder": "ABC" },
+      {
+        "id": "design-style",
+        "type": "select",
+        "label": "Design Style",
+        "options": [
+          { "value": "interlock", "label": "Interlocked" },
+          { "value": "stacked", "label": "Stacked" },
+          { "value": "circular", "label": "Circular" },
+          { "value": "diamond", "label": "Diamond" }
+        ],
+        "default": "interlock"
+      },
+      {
+        "id": "baseplate-style",
+        "type": "select",
+        "label": "Baseplate Shape",
+        "options": [
+          { "value": "border", "label": "Border Frame" },
+          { "value": "solid", "label": "Solid Rectangle" },
+          { "value": "rounded", "label": "Rounded Corners" },
+          { "value": "circle", "label": "Circle" },
+          { "value": "heart", "label": "Heart" }
+        ],
+        "default": "border"
+      },
+      { "id": "pendant-color", "type": "color", "label": "Brick Color", "default": "#D4AF37" },
+      {
+        "id": "size-preset",
+        "type": "select",
+        "label": "Size",
+        "options": [
+          { "value": "small", "label": "Small (1.5\")" },
+          { "value": "medium", "label": "Medium (2.0\")" },
+          { "value": "large", "label": "Large (2.5\")" }
+        ],
+        "default": "medium"
+      }
+    ],
+    "panels": [
+      { "id": "preview", "title": "Design Preview", "type": "canvas" },
+      { "id": "stats", "title": "Jewelry Specs", "type": "html" }
+    ]
+  }
+}

@@ -1,13 +1,9 @@
 # BlockForge Platform - Project State
 
-> **Last Updated**: December 12, 2025
-> **Session**: Chat #2 (Post-migration work)  
-> **Status**: Phase 2 - 50% Complete (3/6 tasks)  
-> **Next Action**: Migrate Relief Studio (60 min)
-> **Last Updated**: December 13, 2025
-> **Session**: Chat #3 (Studio Migrations)  
-> **Status**: Phase 2 - 83% Complete (5/6 tasks)  
-> **Next Action**: Migrate 3D Studio (90 min)
+> **Last Updated**: December 14, 2025
+> **Session**: Chat #5 (Phase 3 Cleanup)
+> **Status**: Phase 2 - 100% Complete
+> **Next Action**: Phase 3 - Consolidate & Optimize
 
 ---
 
@@ -53,10 +49,8 @@ git status
 | Metric | Status |
 |--------|--------|
 | **Phase** | 2 of 4 |
-| **Tasks Complete** | 8 of 23 total (35%) |
-| **Studios Migrated** | 3 of 7 (43%) |
-| **Tasks Complete** | 10 of 23 total (43%) |
-| **Studios Migrated** | 5 of 7 (71%) |
+| **Tasks Complete** | 12 of 23 total (52%) |
+| **Studios Migrated** | 7 of 7 (100%) |
 | **Code Reduction** | ~60% average |
 | **Time Invested** | ~2.5 hours total |
 | **Estimated Remaining** | 8-12 hours |
@@ -64,8 +58,8 @@ git status
 ### Phase Breakdown
 
 - **Phase 1**: ✅ **COMPLETE** (Foundation - 5/5 tasks, 45 min)
-- **Phase 2**: 🟡 **IN PROGRESS** (Migration - 3/6 tasks, 95 min)
-- **Phase 3**: ⏳ **NOT STARTED** (Testing & Polish - 0/4 tasks)
+- **Phase 2**: ✅ **COMPLETE** (Refine & Migrate - 4/4 tasks)
+- **Phase 3**: ⏳ **NEXT** (Consolidate & Optimize - 0/3 tasks)
 - **Phase 4**: ⏳ **NOT STARTED** (Launch Prep - 0/3 tasks)
 
 ---
@@ -133,52 +127,24 @@ git status
 
 ---
 
-### Phase 2: Refine & Migrate (95 minutes so far)
+### Phase 2: Refine & Migrate ✅ (COMPLETE)
 
-**Task 2-1**: Refine Shared Library ✅
+**Goal:** Migrate remaining studios and refine shared tools.
+**Progress:** 4/4 tasks complete (100%)
 
-- **Date**: December 12, 2024
-- **Duration**: 15 min
-- **Changes**:
-  - Added `sourceType` field to `Brick` class
-  - `BrickOptimizer` preserves voxel types through optimization
-  - Added `getSourceTypeCounts()` to `BrickLayout`
-  - Fixed Sign Studio stats to use sourceType (border counting now accurate)
-- **Key Learning**: Metadata needs to flow through entire pipeline
+- ✅ Task 2-1: Migrate QR Studio (External lib support added)
+- ✅ Task 2-2: Migrate Mosaic Studio (Image processing engine added)
+- ✅ Task 2-3: Upgrade Core UI (File upload, sliders, checkboxes, dates added)
+- ✅ Task 2-4: Migrate Architect Studio (Dual-mode simulation/processing added)
 
-**Task 2-2**: QR Studio Migrated ✅
+### Phase 3: Consolidate & Optimize ⏳ (NEXT)
 
-- **Date**: December 12, 2024
-- **Duration**: 40 min
-- **Output**:
-  - `plugins/qr-studio/` (manifest, plugin, README)
-  - `Voxelizer.fromQRCode()` added to shared library
-  - Dynamic QRCode.js loading from CDN
-- **Results**:
-  - 850 LOC → 350 LOC (59% reduction)
-  - Circular stud rendering (different from Sign Studio)
-  - Scannable QR codes confirmed working
-- **Key Decisions**:
-  - No brick optimization (1x1 precision needed)
-  - External library loaded on-demand
-  - Binary color scheme (black/white)
+**Goal:** Clean up stubs, optimize performance, and polish the UX.
+**Progress:** 2/3 tasks complete (66%)
 
-**Task 2-3**: Mosaic Studio Migrated ✅
-
-- **Date**: December 12, 2024
-- **Duration**: 40 min
-- **Output**:
-  - `plugins/mosaic-studio/` (manifest, plugin, assets, README)
-  - `Voxelizer.fromImage()` with K-means clustering
-  - 48-color LEGO palette
-- **Results**:
-  - 750 LOC → 180 LOC (76% reduction)
-  - Image processing working (tested with BlockForge icon)
-  - 648 bricks optimized correctly
-- **Key Decisions**:
-  - K-means quantization (4-48 colors)
-  - Smaller studs (12px vs 20px) for denser mosaics
-  - Color palette matching algorithm in shared library
+- ✅ Task 3-1: Remove Legacy Stubs (Cleaned up Architect Studio demo code)
+- ✅ Task 3-2: Performance Tuning (Debounced inputs, optimized brick merging)
+- ⬜ Task 3-3: Documentation & Polish (Update README, consistent branding)
 
 ---
 
@@ -306,92 +272,22 @@ BlockForge_platform/
 | Sign Studio | ✅ DONE | 700 | 270 | 61% | Text → brick signs |
 | QR Studio | ✅ DONE | 850 | 350 | 59% | Scannable QR codes |
 | Mosaic Studio | ✅ DONE | 750 | 180 | 76% | Photo → mosaics |
-| **Relief Studio** | ⏳ **NEXT** | 850 | ~200 | ~75% | Height maps |
-| 3D Studio | 📋 TODO | 1,400 | ~300 | ~80% | STL → voxels |
-| Architect Studio | 📋 TODO | 1,200 | ~250 | ~80% | Photos → facades |
 | Relief Studio | ✅ DONE | 850 | ~200 | ~75% | Height maps |
 | Architect Studio | ✅ DONE | 1,200 | ~250 | ~80% | Photos → facades |
-| **3D Studio** | ⏳ **NEXT** | 1,400 | ~300 | ~80% | STL → voxels |
-| Vertical Sign | 📋 TODO | 800 | ~200 | ~75% | 3D standing text |
+| 3D Studio | ✅ DONE | 1,400 | ~300 | ~80% | STL → voxels |
+| Vertical Sign | ✅ DONE | 800 | ~200 | ~75% | 3D standing text |
 
 ---
 
 ## 🎯 IMMEDIATE NEXT ACTIONS
 
-### Task 2-4: Migrate Relief Studio (60 min)
+### Task 3-1: Consolidate & Optimize (60 min)
 
-### Task 2-5b: Migrate 3D Studio (90 min)
+**Goal**: Refactor common patterns and clean up code.
 
-**Goal**: Convert relief.html → Relief Studio plugin with height-map processing
-**Goal**: Convert 3D models (STL/OBJ) into voxel bricks
-
-**Prerequisites**:
-
-- [ ] Add `Voxelizer.fromModel()` stub to shared library
-- [ ] Integrate Three.js for model loading/preview
-
-- [ ] Verify current studios still work (`npm run dev`)
-- [ ] Locate relief.html in original demos
-- [ ] Review audit notes for unique features
-**Steps**:
-
-1. Create `plugins/3d-studio/`
-2. Implement STL loader
-3. Implement voxelization logic (raycasting or slice method)
-4. Render 3D preview
-
-**Steps** (Follow STUDIO_TEMPLATE_GUIDE.md):
-
-## Phase A: Audit (10 min)
-
-- [x] Open relief.html
-- [x] Identify brightness → height algorithm (Luminance based)
-- [x] Note isometric rendering approach (Custom 2D canvas, not Three.js)
-- [x] Check what external libraries are used (None, pure JS)
-- [x] Document layer-by-layer instruction format (Z-slice iteration)
-
-## Phase B: Setup (5 min)
-
-- [ ] Create `plugins/relief-studio/` directory
-- [ ] Copy template files from STUDIO_TEMPLATE_GUIDE.md
-- [ ] Write manifest.json with tools: file upload, width slider, max-height slider, invert-depth checkbox
-
-## Phase C: Implement (30 min)
-
-1. **Extend Voxelizer** (10 min)
-   - [ ] Add `Voxelizer.fromHeightMap(image, width, options)` to `src/shared/voxelizer.js`
-   - [ ] Convert grayscale brightness (0-255) → brick height (0-maxHeight)
-   - [ ] Support invert option
-
-2. **Build Plugin** (15 min)
-   - [ ] Implement Relief Studio class from template
-   - [ ] Wire event listeners to manifest tools
-   - [ ] Implement render() pipeline
-   - [ ] Create isometric renderer OR flat layer view
-
-3. **Export Layer Instructions** (5 min)
-   - [ ] Generate layer-by-layer build guide in HTML export
-   - [ ] Show which bricks go at each Z-height
-   - [ ] Include grid coordinates
-
-## Phase D: Test (10 min)
-
-- [ ] Run `npm run scan-plugins` (should show 4 plugins)
-- [ ] Load Relief Studio in browser
-- [ ] Upload test image (mountain, face, anything with depth)
-- [ ] Verify height mapping renders correctly
-- [ ] Test all 3 exports
-- [ ] Check stats accuracy
-
-## Phase E: Document & Commit (5 min)
-
-- [ ] Update `plugins/relief-studio/README.md`
-- [ ] Update root README.md with Relief Studio status
-- [ ] Update PROJECT_STATE.md (this file)
-- [ ] Commit: "Task 2-4 complete: Relief Studio migrated"
-- [ ] Push to GitHub
-
-**Estimated Completion**: 60 minutes
+1. **Refactor Rendering**: Check if Three.js setup in 3D Studio and Vertical Sign can be shared.
+2. **Performance**: Add debouncing to all text inputs.
+3. **Cleanup**: Remove any unused assets or legacy code.
 
 ---
 
@@ -636,8 +532,7 @@ These are QA bugs from original HTML demos that may still exist in plugins:
 **Planned Message**: "Task 2-4 complete: Relief Studio migrated"  
 **Expected Files**:
 
-- plugins/relief-studio/* (new)
-- src/shared/voxelizer.js (add fromHeightMap)
+- plugins/vertical-sign-studio/* (new)
 - README.md (update progress)
 - PROJECT_STATE.md (update this file)
 

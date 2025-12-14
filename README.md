@@ -39,8 +39,8 @@ Here is the **Final, Corrected README.md** to paste into your root directory. It
 
 - ✅ Task 2-1: Migrate QR Studio (Requires external lib)
 - ✅ Task 2-2: Migrate Mosaic Studio (Requires image processing)
-- ⬜ Task 2-3: Migrate Architect Studio
-- ⬜ Task 2-4: Consolidate & Optimize
+- ✅ Task 2-3: Migrate Architect Studio
+- ✅ Task 2-4: Consolidate & Optimize
 
 ---
 

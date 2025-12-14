@@ -88,6 +88,58 @@ export class Voxelizer {
     }
 
     /**
+     * ENGINE 3: Height Map to Grid
+     * Converts image brightness to stack height
+     */
+    static fromHeightMap(image, targetWidth, maxHeight, invert, palette) {
+        // 1. Resize & Aspect Ratio
+        const aspectRatio = image.height / image.width;
+        const targetHeight = Math.round(targetWidth * aspectRatio);
+
+        const canvas = document.createElement('canvas');
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(image, 0, 0, targetWidth, targetHeight);
+        
+        const imgData = ctx.getImageData(0, 0, targetWidth, targetHeight).data;
+        let grid = [];
+
+        for (let y = 0; y < targetHeight; y++) {
+            let row = [];
+            for (let x = 0; x < targetWidth; x++) {
+                const i = (y * targetWidth + x) * 4;
+                const r = imgData[i];
+                const g = imgData[i+1];
+                const b = imgData[i+2];
+
+                // 2. Calculate Luminance (Brightness)
+                let lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+                if (invert) lum = 1.0 - lum;
+                
+                // 3. Map to Height (1 to MaxHeight)
+                const height = Math.max(1, Math.round(lum * maxHeight));
+
+                // 4. Find Nearest Color
+                const color = this.findNearestColor(r, g, b, palette);
+
+                // Store object with height data
+                row.push({
+                    color: color,
+                    height: height
+                });
+            }
+            grid.push(row);
+        }
+
+        return {
+            grid: grid,
+            width: targetWidth,
+            height: targetHeight
+        };
+    }
+
+    /**
      * Helper: Find nearest color using Euclidean distance
      */
     static findNearestColor(r, g, b, palette) {
