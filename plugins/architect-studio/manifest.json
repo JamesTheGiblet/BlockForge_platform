@@ -1,0 +1,33 @@
+{
+  "id": "architect-studio",
+  "name": "Architect Studio",
+  "version": "1.0.0",
+  "description": "Premium architectural models for real estate",
+  "entry": "architect-studio.js",
+  "ui": {
+    "tools": [
+      { "id": "house-photo", "type": "file", "label": "House Photo", "accept": "image/*" },
+      { "id": "detail-level", "type": "range", "label": "Detail Level", "min": 1, "max": 10, "default": 7 },
+      {
+        "id": "arch-style",
+        "type": "select",
+        "label": "Architectural Style",
+        "options": [
+          { "value": "modern", "label": "Modern Contemporary" },
+          { "value": "traditional", "label": "Traditional" },
+          { "value": "victorian", "label": "Victorian" },
+          { "value": "colonial", "label": "Colonial" }
+        ],
+        "default": "traditional"
+      },
+      { "id": "include-trees", "type": "checkbox", "label": "Add Landscaping", "default": true },
+      { "id": "include-fence", "type": "checkbox", "label": "Add Fence", "default": false },
+      { "id": "client-name", "type": "text", "label": "Client Name", "placeholder": "The Johnson Family" },
+      { "id": "closing-date", "type": "date", "label": "Closing Date" }
+    ],
+    "panels": [
+      { "id": "preview", "title": "Blueprint Preview", "type": "canvas" },
+      { "id": "stats", "title": "Bill of Materials", "type": "html" }
+    ]
+  }
+}

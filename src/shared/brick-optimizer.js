@@ -23,8 +23,24 @@ export class BrickLayout {
 
 export class BrickOptimizer {
     static optimize(voxelGrid, options = {}) {
-        console.log('Stub: Optimizing bricks...');
-        // Return a mock layout for now
-        return new BrickLayout();
+        const layout = new BrickLayout();
+        
+        if (!voxelGrid || !voxelGrid.grid) return layout;
+
+        const grid = voxelGrid.grid;
+        const height = voxelGrid.height;
+        const width = voxelGrid.width;
+
+        // Basic 1x1 optimization
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                const color = grid[y][x];
+                if (color) {
+                    layout.add(new Brick(x, y, 0, 1, 1, color, 'plate-1x1'));
+                }
+            }
+        }
+        
+        return layout;
     }
 }

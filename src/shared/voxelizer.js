@@ -1,18 +1,13 @@
-// src/shared/voxelizer.js
 import { ColorUtils } from './utils/color.js';
 
 export class Voxelizer {
     /**
-     * Converts text into a 2D grid of 1s (filled) and 0s (empty)
-     * @param {string} text - The text to convert
-     * @param {object} fontData - The font definition object
-     * @param {object} options - { spacing: number }
+     * ENGINE 1: Text to Grid
+     * Converts string input into a 2D grid of 1s and 0s
      */
     static fromText(text, fontData, options = {}) {
-        console.log('Stub: Voxelizing text:', text);
-        return { bricks: [] }; // Placeholder
         const spacing = options.spacing || 1;
-        const rows = 5; // Standard height for this 5x5 font
+        const rows = 5; // Standard height for the 5x5 font
         
         // 1. Initialize empty rows
         let grid = [];
@@ -36,7 +31,6 @@ export class Voxelizer {
         // 3. Remove trailing spacing
         for(let r = 0; r < rows; r++) {
             if (grid[r].length > 0) {
-                // Remove 'spacing' amount of items from the end
                 grid[r].splice(-spacing);
             }
         }
@@ -49,10 +43,8 @@ export class Voxelizer {
     }
 
     /**
-     * Converts an image into a grid of LEGO colors
-     * @param {HTMLImageElement} image - The source image
-     * @param {number} targetWidth - Desired width in studs
-     * @param {Array} palette - Array of {hex, name} objects
+     * ENGINE 2: Image to Grid
+     * Converts an image into a grid of LEGO palette colors
      */
     static fromImage(image, targetWidth, palette) {
         // 1. Calculate Aspect Ratio
@@ -79,7 +71,7 @@ export class Voxelizer {
                 const r = imgData[i];
                 const g = imgData[i+1];
                 const b = imgData[i+2];
-                // Alpha ignored for now (assuming opaque)
+                // Alpha ignored for now
 
                 // 4. Find Nearest Color in Palette
                 const nearest = this.findNearestColor(r, g, b, palette);
@@ -95,16 +87,16 @@ export class Voxelizer {
         };
     }
 
+    /**
+     * Helper: Find nearest color using Euclidean distance
+     */
     static findNearestColor(r, g, b, palette) {
         let minDistance = Infinity;
         let nearest = palette[0];
 
         for (const color of palette) {
-            // Helper needed: Hex to RGB (we'll assume ColorUtils handles this, or do it inline)
-            // For MVP, let's use a simple distance check
             const target = ColorUtils.hexToRGB(color.hex);
             
-            // Euclidean distance
             const dist = Math.sqrt(
                 Math.pow(r - target.r, 2) +
                 Math.pow(g - target.g, 2) +
@@ -117,10 +109,5 @@ export class Voxelizer {
             }
         }
         return nearest;
-    }
-
-    static fromQRCode(data, options = {}) {
-        console.log('Stub: Voxelizing QR code');
-        return { bricks: [] }; // Placeholder
     }
 }

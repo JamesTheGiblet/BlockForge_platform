@@ -95,6 +95,24 @@ function renderPluginUI(container, manifest) {
                            style="width:100%;">
                 </div>`;
         }
+
+        // 🆕 NEW: Checkbox
+        if (tool.type === 'checkbox') {
+            return `
+                <div class="tool-group" style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; padding: 0.5rem; background: #fff; border: 1px solid #ddd; border-radius: 4px;">
+                    <input type="checkbox" id="${tool.id}" ${tool.default ? 'checked' : ''} style="width: 20px; height: 20px;">
+                    <label style="margin:0; font-weight:bold;">${tool.label}</label>
+                </div>`;
+        }
+
+        // 🆕 NEW: Date Picker
+        if (tool.type === 'date') {
+            return `
+                <div class="tool-group" style="margin-bottom: 1rem;">
+                    <label style="display:block; font-weight:bold; margin-bottom:0.5rem;">${tool.label}</label>
+                    <input type="date" id="${tool.id}" value="${tool.default || ''}" style="width:100%; padding:0.5rem;">
+                </div>`;
+        }
         
         return ''; 
     }).join('');
