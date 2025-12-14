@@ -1,4 +1,8 @@
 import { ColorUtils } from '../../src/shared/index.js';
+import { FONT_DATA } from '../../src/shared/font-data.js';
+import { COLOR_PALETTE_ARRAY } from '../../src/shared/color-palette.js';
+
+import { StudioHeader } from '../../src/shared/studio-header.js';
 
 export default class QRStudio {
     constructor() {
@@ -6,19 +10,68 @@ export default class QRStudio {
         this.size = 32;
         this.fgColor = "#1B2A34";
         this.bgColor = "#FFFFFF";
+        this.palette = COLOR_PALETTE_ARRAY;
         this.canvas = null;
         this.libLoaded = false;
     }
 
+    injectColorDropdowns() {
+        // Foreground
+        const fgInput = document.getElementById('fg-color');
+        if (fgInput && !document.getElementById('fg-color-dropdown')) {
+            const fgDropdown = document.createElement('select');
+            fgDropdown.id = 'fg-color-dropdown';
+            fgDropdown.style.marginLeft = '8px';
+            fgDropdown.innerHTML = `<option value="">Palette…</option>` +
+                this.palette.map(c => `<option value="${c.hex}">${c.name}</option>`).join('');
+            fgInput.parentNode.insertBefore(fgDropdown, fgInput.nextSibling);
+            fgDropdown.onchange = (e) => {
+                if (e.target.value) {
+                    this.fgColor = e.target.value;
+                    fgInput.value = e.target.value;
+                    this.render();
+                }
+            };
+        }
+        // Background
+        const bgInput = document.getElementById('bg-color');
+        if (bgInput && !document.getElementById('bg-color-dropdown')) {
+            const bgDropdown = document.createElement('select');
+            bgDropdown.id = 'bg-color-dropdown';
+            bgDropdown.style.marginLeft = '8px';
+            bgDropdown.innerHTML = `<option value="">Palette…</option>` +
+                this.palette.map(c => `<option value="${c.hex}">${c.name}</option>`).join('');
+            bgInput.parentNode.insertBefore(bgDropdown, bgInput.nextSibling);
+            bgDropdown.onchange = (e) => {
+                if (e.target.value) {
+                    this.bgColor = e.target.value;
+                    bgInput.value = e.target.value;
+                    this.render();
+                }
+            };
+        }
+    }
+
     async init() {
         console.log("✅ QR Studio Initializing...");
-        
+        StudioHeader.inject({
+            title: 'QR Studio',
+            description: 'Generate <span style="font-weight:700;color:#FFE082;">scannable QR codes</span> built from 1x1 bricks.<br>Enter your data, pick your colors, and export your custom QR masterpiece!',
+            features: [
+                { icon: '', label: 'QR Code', color: '#4CAF50' },
+                { icon: '', label: 'Custom Colors', color: '#2196F3' },
+                { icon: '', label: 'Export Options', color: '#FF9800' }
+            ],
+            id: 'qrstudio-main-header'
+        });
+
         // 1. Load External Library
         await this.loadQRLibrary();
-        
+
         // 2. Setup UI
         this.canvas = document.getElementById('preview');
         this.setupEventListeners();
+        this.injectColorDropdowns();
         
         // 3. Initial Render
         this.render();
@@ -62,11 +115,17 @@ export default class QRStudio {
 
         document.getElementById('fg-color')?.addEventListener('input', (e) => {
             this.fgColor = e.target.value;
+            // Reset dropdown if custom color
+            const fgDropdown = document.getElementById('fg-color-dropdown');
+            if (fgDropdown && fgDropdown.value !== e.target.value) fgDropdown.value = '';
             this.render();
         });
 
         document.getElementById('bg-color')?.addEventListener('input', (e) => {
             this.bgColor = e.target.value;
+            // Reset dropdown if custom color
+            const bgDropdown = document.getElementById('bg-color-dropdown');
+            if (bgDropdown && bgDropdown.value !== e.target.value) bgDropdown.value = '';
             this.render();
         });
     }

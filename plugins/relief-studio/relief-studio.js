@@ -1,5 +1,7 @@
-import { RELIEF_PALETTE } from './assets/palette.js';
+import { COLOR_PALETTE_ARRAY } from '../../src/shared/color-palette.js';
 import { Voxelizer, BrickOptimizer, FileUtils, Exporters, ColorUtils } from '../../src/shared/index.js';
+
+import { StudioHeader } from '../../src/shared/studio-header.js';
 
 export default class ReliefStudio {
     constructor() {
@@ -19,6 +21,16 @@ export default class ReliefStudio {
 
     async init() {
         console.log("✅ Relief Studio Initialized");
+        StudioHeader.inject({
+            title: 'Relief Studio',
+            description: 'Transform images into <span style="font-weight:700;color:#FFE082;">3D topographical brick maps</span>.<br>Upload a photo, adjust height and depth, and preview your relief in real time!',
+            features: [
+                { icon: '', label: 'Image Upload', color: '#4CAF50' },
+                { icon: '', label: 'Height Control', color: '#2196F3' },
+                { icon: '', label: '3D Preview', color: '#FF9800' }
+            ],
+            id: 'reliefstudio-main-header'
+        });
         this.canvas = document.getElementById('preview');
         this.setupEventListeners();
         this.drawPlaceholder();
@@ -76,7 +88,7 @@ export default class ReliefStudio {
             this.width, 
             this.maxHeight, 
             this.invertDepth, 
-            RELIEF_PALETTE
+            COLOR_PALETTE_ARRAY
         );
 
         // 2. Optimize

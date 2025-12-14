@@ -1,4 +1,4 @@
-import { LEGO_PALETTE } from './assets/palette.js';
+import { COLOR_PALETTE_ARRAY } from '../../src/shared/color-palette.js';
 import { Voxelizer, FileUtils } from '../../src/shared/index.js';
 
 export default class MosaicStudio {
@@ -41,7 +41,7 @@ export default class MosaicStudio {
         console.log(`🎨 Rendering Mosaic: ${this.width} studs wide`);
 
         // 1. Voxelize (The heavy lifting)
-        const result = Voxelizer.fromImage(this.image, this.width, LEGO_PALETTE);
+        const result = Voxelizer.fromImage(this.image, this.width, COLOR_PALETTE_ARRAY);
         
         // 2. Draw
         this.drawCanvas(result.grid, result.width, result.height);

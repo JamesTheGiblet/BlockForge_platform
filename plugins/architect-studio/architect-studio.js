@@ -1,4 +1,4 @@
-import { ARCH_PALETTE } from './assets/palette.js';
+import { COLOR_PALETTE } from '../../src/shared/color-palette.js';
 import { FileUtils, Exporters, Voxelizer, BrickOptimizer } from '../../src/shared/index.js';
 
 export default class ArchitectStudio {
@@ -94,7 +94,7 @@ export default class ArchitectStudio {
         // 1. Voxelize
         // Map detail level (1-10) to width (32-92 studs)
         const width = 32 + (this.detailLevel * 6); 
-        const palette = Object.values(ARCH_PALETTE);
+        const palette = Object.values(COLOR_PALETTE);
         
         const voxelGrid = Voxelizer.fromImage(this.image, width, palette);
 
@@ -163,7 +163,7 @@ export default class ArchitectStudio {
         }
 
         const bom = Object.entries(colorCounts).map(([hex, count]) => {
-            const palEntry = Object.values(ARCH_PALETTE).find(p => p.hex === hex) || { name: 'Custom', hex };
+            const palEntry = Object.values(COLOR_PALETTE).find(p => p.hex === hex) || { name: 'Custom', hex };
             return { part: "Brick", color: palEntry.name, hex: hex, qty: count };
         });
 

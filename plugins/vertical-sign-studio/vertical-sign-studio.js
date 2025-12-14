@@ -1,5 +1,8 @@
-import { FONT_DATA } from './assets/font-data.js';
+import { FONT_DATA } from '../../src/shared/font-data.js';
 import { Voxelizer, Exporters } from '../../src/shared/index.js';
+import { COLOR_PALETTE_ARRAY } from '../../src/shared/color-palette.js';
+
+import { StudioHeader } from '../../src/shared/studio-header.js';
 
 export default class VerticalSignStudio {
     constructor() {
@@ -7,6 +10,7 @@ export default class VerticalSignStudio {
         this.textColor = "#1B2A34";
         this.bgColor = "#FFFFFF";
         this.height = 3;
+        this.palette = COLOR_PALETTE_ARRAY;
         
         this.container = null;
         this.scene = null;
@@ -18,21 +22,32 @@ export default class VerticalSignStudio {
 
     async init() {
         console.log("✅ Vertical Sign Studio Initializing...");
-        
+        StudioHeader.inject({
+            title: 'Vertical Sign Studio',
+            description: 'Design 3D standing brick signs with <span style="font-weight:700;color:#FFE082;">vertical orientation</span>.<br>Customize your text, colors, and height, and preview in interactive 3D!',
+            features: [
+                { icon: '', label: '3D Preview', color: '#4CAF50' },
+                { icon: '', label: 'Custom Height', color: '#2196F3' },
+                { icon: '', label: 'Color Palette', color: '#FF9800' }
+            ],
+            id: 'verticalsignstudio-main-header'
+        });
+
         // 1. Load Three.js
         await this.loadThreeJS();
-        
+
         // 2. Setup Container
         this.container = document.getElementById('preview');
         this.container.style.height = "400px";
         this.container.style.overflow = "hidden";
-        
+
         // 3. Init 3D Scene
         this.init3D();
-        
+
         // 4. Setup Listeners
         this.setupEventListeners();
-        
+        this.injectColorDropdowns();
+
         // 5. Render
         this.generate();
         this.animate();
@@ -113,10 +128,16 @@ export default class VerticalSignStudio {
         });
         document.getElementById('text-color')?.addEventListener('input', (e) => {
             this.textColor = e.target.value;
+            // Reset dropdown if custom color
+            const textDropdown = document.getElementById('text-color-dropdown');
+            if (textDropdown && textDropdown.value !== e.target.value) textDropdown.value = '';
             this.generate();
         });
         document.getElementById('bg-color')?.addEventListener('input', (e) => {
             this.bgColor = e.target.value;
+            // Reset dropdown if custom color
+            const bgDropdown = document.getElementById('bg-color-dropdown');
+            if (bgDropdown && bgDropdown.value !== e.target.value) bgDropdown.value = '';
             this.generate();
         });
         document.getElementById('sign-height')?.addEventListener('input', (e) => {
@@ -229,6 +250,43 @@ export default class VerticalSignStudio {
             
             document.getElementById('export-stl').onclick = () => {
                 alert("STL Export requires STLExporter.js (Adding this to shared library is a Task for Phase 3!)");
+            };
+        }
+    }
+
+    injectColorDropdowns() {
+        // Text Color
+        const textInput = document.getElementById('text-color');
+        if (textInput && !document.getElementById('text-color-dropdown')) {
+            const textDropdown = document.createElement('select');
+            textDropdown.id = 'text-color-dropdown';
+            textDropdown.style.marginLeft = '8px';
+            textDropdown.innerHTML = `<option value="">Palette…</option>` +
+                this.palette.map(c => `<option value="${c.hex}">${c.name}</option>`).join('');
+            textInput.parentNode.insertBefore(textDropdown, textInput.nextSibling);
+            textDropdown.onchange = (e) => {
+                if (e.target.value) {
+                    this.textColor = e.target.value;
+                    textInput.value = e.target.value;
+                    this.generate();
+                }
+            };
+        }
+        // Background Color
+        const bgInput = document.getElementById('bg-color');
+        if (bgInput && !document.getElementById('bg-color-dropdown')) {
+            const bgDropdown = document.createElement('select');
+            bgDropdown.id = 'bg-color-dropdown';
+            bgDropdown.style.marginLeft = '8px';
+            bgDropdown.innerHTML = `<option value="">Palette…</option>` +
+                this.palette.map(c => `<option value="${c.hex}">${c.name}</option>`).join('');
+            bgInput.parentNode.insertBefore(bgDropdown, bgInput.nextSibling);
+            bgDropdown.onchange = (e) => {
+                if (e.target.value) {
+                    this.bgColor = e.target.value;
+                    bgInput.value = e.target.value;
+                    this.generate();
+                }
             };
         }
     }

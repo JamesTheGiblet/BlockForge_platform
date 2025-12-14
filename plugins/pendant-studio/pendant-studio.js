@@ -1,5 +1,8 @@
-import { LETTER_PATTERNS } from './assets/letter-patterns.js';
+import { FONT_DATA } from '../../src/shared/font-data.js';
 import { Exporters, FileUtils } from '../../src/shared/index.js';
+import { COLOR_PALETTE_ARRAY } from '../../src/shared/color-palette.js';
+
+import { StudioHeader } from '../../src/shared/studio-header.js';
 
 export default class PendantStudio {
     constructor() {
@@ -7,6 +10,7 @@ export default class PendantStudio {
         this.style = "interlock";
         this.baseplate = "border";
         this.color = "#D4AF37"; // Gold
+        this.palette = COLOR_PALETTE_ARRAY;
         this.size = "medium";
         this.gridSize = 20;
         this.canvas = null;
@@ -15,13 +19,70 @@ export default class PendantStudio {
 
     async init() {
         console.log("✅ Pendant Studio Initialized");
+        StudioHeader.inject({
+            title: 'Pendant Studio',
+            description: 'Design custom <span style="font-weight:700;color:#FFE082;">brick pendants</span> with your initials.<br>Choose style, color, and size, and export your unique wearable creation!',
+            features: [
+                { icon: '', label: 'Initials', color: '#4CAF50' },
+                { icon: '', label: 'Style Presets', color: '#2196F3' },
+                { icon: '', label: 'Export Options', color: '#FF9800' }
+            ],
+            id: 'pendantstudio-main-header'
+        });
         this.canvas = document.getElementById('preview');
-        
         // Load jsPDF dynamically if needed for instructions
         this.loadJsPDF();
-        
         this.setupEventListeners();
+        this.injectColorDropdown();
         this.generate();
+    }
+
+    injectColorDropdown() {
+        // Find the color input
+        const colorInput = document.getElementById('pendant-color');
+        if (!colorInput) return;
+        // Remove existing dropdown if present
+        let existing = document.getElementById('pendant-color-dropdown');
+        if (existing) existing.remove();
+
+        // Create dropdown
+        const dropdown = document.createElement('select');
+        dropdown.id = 'pendant-color-dropdown';
+        dropdown.style.marginLeft = '8px';
+        dropdown.style.padding = '4px';
+        dropdown.style.borderRadius = '4px';
+        dropdown.style.border = '1px solid #ccc';
+
+        // Add default option
+        const defaultOpt = document.createElement('option');
+        defaultOpt.value = '';
+        defaultOpt.textContent = 'Palette...';
+        dropdown.appendChild(defaultOpt);
+
+        // Add palette options
+        this.palette.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.hex;
+            opt.textContent = c.name;
+            opt.style.backgroundColor = c.hex;
+            dropdown.appendChild(opt);
+        });
+
+        // Set dropdown value if matches current color
+        if (this.palette.some(c => c.hex.toLowerCase() === this.color.toLowerCase())) {
+            dropdown.value = this.color;
+        }
+
+        // On change, update color input and trigger event
+        dropdown.addEventListener('change', (e) => {
+            if (dropdown.value) {
+                colorInput.value = dropdown.value;
+                colorInput.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+        });
+
+        // Insert after color input
+        colorInput.parentNode.insertBefore(dropdown, colorInput.nextSibling);
     }
 
     async loadJsPDF() {
@@ -46,6 +107,9 @@ export default class PendantStudio {
         });
         document.getElementById('pendant-color')?.addEventListener('input', (e) => {
             this.color = e.target.value;
+            // Reset dropdown if custom color
+            const dropdown = document.getElementById('pendant-color-dropdown');
+            if (dropdown && dropdown.value !== e.target.value) dropdown.value = '';
             this.render(); // Re-render only
         });
         document.getElementById('size-preset')?.addEventListener('change', (e) => {
@@ -64,7 +128,7 @@ export default class PendantStudio {
         this.grid = Array(this.gridSize).fill(null).map(() => Array(this.gridSize).fill(0));
 
         // 1. Generate Letter Pattern
-        const letters = this.initials.split('').map(l => LETTER_PATTERNS[l] || LETTER_PATTERNS['A']);
+        const letters = this.initials.split('').map(l => FONT_DATA[l] || FONT_DATA['A']);
         const center = Math.floor(this.gridSize / 2);
 
         // Simple placement logic based on style (Simplified version of your code)

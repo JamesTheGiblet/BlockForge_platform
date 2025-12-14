@@ -1,0 +1,60 @@
+// Shared color palette for all studios
+// As object for key-based access (for architect-studio, etc)
+export const COLOR_PALETTE = {
+    roof: { hex: "#582A12", name: "Dark Brown Roof" },
+    siding: { hex: "#FFFFFF", name: "White Siding" },
+    trim: { hex: "#363636", name: "Dark Gray Trim" },
+    door: { hex: "#8B0000", name: "Red Door" },
+    window: { hex: "#87CEEB", name: "Glass Blue" },
+    landscape: { hex: "#228B22", name: "Green Grass" },
+    foundation: { hex: "#808080", name: "Concrete Gray" },
+    black: { hex: "#1B2A34", name: "Black" },
+    red: { hex: "#C91A09", name: "Red" },
+    blue: { hex: "#0055BF", name: "Blue" },
+    yellow: { hex: "#F2CD37", name: "Yellow" },
+    darkGreen: { hex: "#287F46", name: "Dark Green" },
+    lime: { hex: "#BBE90B", name: "Lime" },
+    orange: { hex: "#FE8A18", name: "Orange" },
+    mediumAzure: { hex: "#36AEBF", name: "Medium Azure" },
+    darkGray: { hex: "#6C6E68", name: "Dark Gray" },
+    lightGray: { hex: "#A0A5A9", name: "Light Gray" },
+    reddishBrown: { hex: "#582A12", name: "Reddish Brown" },
+    tan: { hex: "#E4CD9E", name: "Tan" },
+    pink: { hex: "#F785B1", name: "Pink" },
+    purple: { hex: "#81007B", name: "Purple" },
+    darkBlue: { hex: "#0A3463", name: "Dark Blue" }
+};
+
+// As array for palette consumers (like mosaic-studio)
+export const COLOR_PALETTE_ARRAY = [
+    { name: 'Black', hex: '#1B2A34' },
+    { name: 'White', hex: '#FFFFFF' },
+    { name: 'Red', hex: '#C91A09' },
+    { name: 'Blue', hex: '#0055BF' },
+    { name: 'Yellow', hex: '#F2CD37' },
+    { name: 'Dark Green', hex: '#287F46' },
+    { name: 'Lime', hex: '#BBE90B' },
+    { name: 'Orange', hex: '#FE8A18' },
+    { name: 'Medium Azure', hex: '#36AEBF' },
+    { name: 'Dark Gray', hex: '#6C6E68' },
+    { name: 'Light Gray', hex: '#A0A5A9' },
+    { name: 'Reddish Brown', hex: '#582A12' },
+    { name: 'Tan', hex: '#E4CD9E' },
+    { name: 'Pink', hex: '#F785B1' },
+    { name: 'Purple', hex: '#81007B' },
+    { name: 'Dark Blue', hex: '#0A3463' },
+    { name: 'Gold', hex: '#D4AF37' },
+    { name: 'Black', hex: '#000000' },
+    { name: 'Dark Red', hex: '#720E0F' },
+    { name: 'Green', hex: '#237841' },
+    { name: 'Yellow', hex: '#FFD700' },
+    { name: 'Orange', hex: '#FF7700' },
+    // Architect-studio specific
+    { name: 'Dark Brown Roof', hex: '#582A12' },
+    { name: 'White Siding', hex: '#FFFFFF' },
+    { name: 'Dark Gray Trim', hex: '#363636' },
+    { name: 'Red Door', hex: '#8B0000' },
+    { name: 'Glass Blue', hex: '#87CEEB' },
+    { name: 'Green Grass', hex: '#228B22' },
+    { name: 'Concrete Gray', hex: '#808080' }
+];
