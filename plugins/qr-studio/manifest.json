@@ -1,0 +1,45 @@
+{
+  "id": "qr-studio",
+  "name": "QR Studio",
+  "version": "1.0.0",
+  "description": "Generate scannable QR codes built from 1x1 bricks",
+  "entry": "qr-studio.js",
+  "ui": {
+    "tools": [
+      {
+        "id": "qr-data",
+        "type": "text",
+        "label": "QR Content (URL/Text)",
+        "placeholder": "https://example.com",
+        "default": "https://blockforgestudio.com"
+      },
+      {
+        "id": "plate-size",
+        "type": "select",
+        "label": "Baseplate Size",
+        "options": [
+          { "value": "32", "label": "32x32 (Standard)" },
+          { "value": "48", "label": "48x48 (Large)" },
+          { "value": "64", "label": "64x64 (Premium)" }
+        ],
+        "default": "32"
+      },
+      {
+        "id": "fg-color",
+        "type": "color",
+        "label": "Code Color",
+        "default": "#1B2A34"
+      },
+      {
+        "id": "bg-color",
+        "type": "color",
+        "label": "Background",
+        "default": "#FFFFFF"
+      }
+    ],
+    "panels": [
+      { "id": "preview", "title": "Preview", "type": "canvas" },
+      { "id": "stats", "title": "Brick Count", "type": "html" }
+    ]
+  }
+}
