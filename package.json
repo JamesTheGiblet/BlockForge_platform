@@ -1,0 +1,31 @@
+{
+  "name": "blockforge_platform",
+  "version": "0.0.1",
+  "description": "Production-grade platform for converting digital content into LEGO-compatible brick designs",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "scan-plugins": "node scripts/scan-plugins.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JamesTheGiblet/BlockForge_platform.git"
+  },
+  "keywords": [
+    "lego",
+    "voxel",
+    "3d",
+    "platform"
+  ],
+  "author": "JamesTheGiblet",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/JamesTheGiblet/BlockForge_platform/issues"
+  },
+  "homepage": "https://github.com/JamesTheGiblet/BlockForge_platform#readme",
+  "devDependencies": {
+    "vite": "^6.0.0"
+  }
+}

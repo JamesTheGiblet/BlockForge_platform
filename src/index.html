@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlockForge Platform</title>
+    <style>
+        body { font-family: sans-serif; padding: 2rem; background: #f0f2f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        header { border-bottom: 2px solid #eee; padding-bottom: 1rem; margin-bottom: 2rem; }
+        h1 { margin: 0; color: #333; }
+        select { padding: 0.5rem; font-size: 1rem; margin-top: 1rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏗️ BlockForge Platform</h1>
+            <label for="studio-selector" style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden;">Choose a Studio</label>
+            <select id="studio-selector">
+                <option value="">Select a Studio...</option>
+            </select>
+        </header>
+        
+        <main id="app-container">
+            <div id="placeholder">Select a studio to begin.</div>
+        </main>
+    </div>
+    <script type="module" src="/main.js"></script>
+</body>
+</html>

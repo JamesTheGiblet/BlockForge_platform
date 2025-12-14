@@ -1,0 +1,45 @@
+{
+  "id": "sign-studio",
+  "name": "Sign Studio",
+  "version": "1.0.0",
+  "description": "Create custom text signs with LEGO bricks",
+  "entry": "sign-studio.js",
+  "ui": {
+    "tools": [
+      {
+        "id": "sign-text",
+        "type": "text",
+        "label": "Sign Text",
+        "placeholder": "HELLO",
+        "default": "HELLO"
+      },
+      {
+        "id": "text-color",
+        "type": "color",
+        "label": "Text Color",
+        "default": "#000000"
+      },
+      {
+        "id": "bg-color",
+        "type": "color",
+        "label": "Background",
+        "default": "#F2F3F4"
+      },
+      {
+        "id": "border-style",
+        "type": "select",
+        "label": "Border Style",
+        "options": [
+          { "value": "none", "label": "None" },
+          { "value": "simple", "label": "Simple Box" },
+          { "value": "double", "label": "Double Rim" }
+        ],
+        "default": "simple"
+      }
+    ],
+    "panels": [
+      { "id": "preview", "title": "Preview", "type": "canvas" },
+      { "id": "stats", "title": "Brick Count", "type": "html" }
+    ]
+  }
+}
