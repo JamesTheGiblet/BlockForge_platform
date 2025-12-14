@@ -1,0 +1,40 @@
+{
+  "id": "mosaic-studio",
+  "name": "Mosaic Studio",
+  "version": "1.0.0",
+  "description": "Convert photos into brick mosaics",
+  "entry": "mosaic-studio.js",
+  "ui": {
+    "tools": [
+      {
+        "id": "upload-image",
+        "type": "file",
+        "label": "Upload Photo",
+        "accept": "image/*"
+      },
+      {
+        "id": "target-width",
+        "type": "range",
+        "label": "Width (Studs)",
+        "min": 16,
+        "max": 96,
+        "default": 48
+      },
+      {
+        "id": "color-contrast",
+        "type": "select",
+        "label": "Contrast",
+        "options": [
+          { "value": "1.0", "label": "Normal" },
+          { "value": "1.2", "label": "High" },
+          { "value": "1.5", "label": "Vivid" }
+        ],
+        "default": "1.0"
+      }
+    ],
+    "panels": [
+      { "id": "preview", "title": "Mosaic Preview", "type": "canvas" },
+      { "id": "stats", "title": "Parts List", "type": "html" }
+    ]
+  }
+}

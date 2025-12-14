@@ -24,14 +24,13 @@ async function initApp() {
         container.innerHTML = '<p>Loading UI...</p>';
 
         try {
-            // A. Find the Manifest
             const pluginData = plugins.find(p => p.id === pluginId);
             if (!pluginData) throw new Error("Plugin data not found");
 
-            // B. Build the UI Shell (The "Forge" Interface)
+            // Build UI
             renderPluginUI(container, pluginData.manifest);
 
-            // C. Load and Start the Plugin Logic
+            // Load Logic
             await pluginLoader.loadPlugin(pluginId);
             console.log(`✅ Active: ${pluginId}`);
             
@@ -42,7 +41,7 @@ async function initApp() {
     });
 }
 
-// 🛠️ The UI Generator
+// 🛠️ The UI Generator (UPGRADED V2)
 function renderPluginUI(container, manifest) {
     const ui = manifest.ui;
     
@@ -51,44 +50,70 @@ function renderPluginUI(container, manifest) {
         // Text Input
         if (tool.type === 'text') {
             return `
-                <div class="tool-group">
-                    <label>${tool.label}</label>
-                    <input type="text" id="${tool.id}" value="${tool.default || ''}" placeholder="${tool.placeholder || ''}">
+                <div class="tool-group" style="margin-bottom: 1rem;">
+                    <label style="display:block; font-weight:bold; margin-bottom:0.5rem;">${tool.label}</label>
+                    <input type="text" id="${tool.id}" value="${tool.default || ''}" placeholder="${tool.placeholder || ''}" style="width:100%; padding:0.5rem;">
                 </div>`;
         }
         // Color Picker
         if (tool.type === 'color') {
             return `
-                <div class="tool-group">
-                    <label>${tool.label}</label>
-                    <input type="color" id="${tool.id}" value="${tool.default || '#000000'}">
+                <div class="tool-group" style="margin-bottom: 1rem;">
+                    <label style="display:block; font-weight:bold; margin-bottom:0.5rem;">${tool.label}</label>
+                    <input type="color" id="${tool.id}" value="${tool.default || '#000000'}" style="width:100%; height:40px;">
                 </div>`;
         }
         // Dropdown
         if (tool.type === 'select') {
             const options = tool.options.map(opt => `<option value="${opt.value}">${opt.label}</option>`).join('');
             return `
-                <div class="tool-group">
-                    <label>${tool.label}</label>
-                    <select id="${tool.id}">${options}</select>
+                <div class="tool-group" style="margin-bottom: 1rem;">
+                    <label style="display:block; font-weight:bold; margin-bottom:0.5rem;">${tool.label}</label>
+                    <select id="${tool.id}" style="width:100%; padding:0.5rem;">${options}</select>
                 </div>`;
         }
-        return ''; // Unknown tool
+        
+        // 🆕 NEW: File Upload (This was missing!)
+        if (tool.type === 'file') {
+            return `
+                <div class="tool-group" style="margin-bottom: 1rem; padding: 1rem; border: 2px dashed #ccc; border-radius: 4px; text-align: center;">
+                    <label style="display:block; font-weight:bold; margin-bottom:0.5rem;">${tool.label}</label>
+                    <input type="file" id="${tool.id}" accept="${tool.accept || '*/*'}" style="width:100%;">
+                </div>`;
+        }
+
+        // 🆕 NEW: Range Slider (This was missing!)
+        if (tool.type === 'range') {
+            return `
+                <div class="tool-group" style="margin-bottom: 1rem;">
+                    <label style="display:block; font-weight:bold; margin-bottom:0.5rem;">
+                        ${tool.label}: <span id="${tool.id}-val">${tool.default}</span>
+                    </label>
+                    <input type="range" id="${tool.id}" 
+                           min="${tool.min || 0}" max="${tool.max || 100}" value="${tool.default || 50}" 
+                           oninput="document.getElementById('${tool.id}-val').textContent = this.value"
+                           style="width:100%;">
+                </div>`;
+        }
+        
+        return ''; 
     }).join('');
 
     // Generate Panels (Right side)
     let panelsHtml = ui.panels.map(panel => {
         if (panel.type === 'canvas') {
             return `
-                <div class="panel">
-                    <h3>${panel.title}</h3>
-                    <canvas id="${panel.id}" width="400" height="300"></canvas>
+                <div class="panel" style="background: white; padding: 1rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 1rem;">
+                    <h3 style="margin-top:0;">${panel.title}</h3>
+                    <div style="overflow: auto; max-height: 600px;">
+                        <canvas id="${panel.id}"></canvas>
+                    </div>
                 </div>`;
         }
         if (panel.type === 'html') {
             return `
-                <div class="panel">
-                    <h3>${panel.title}</h3>
+                <div class="panel" style="background: white; padding: 1rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <h3 style="margin-top:0;">${panel.title}</h3>
                     <div id="${panel.id}">Waiting for data...</div>
                 </div>`;
         }
@@ -96,8 +121,8 @@ function renderPluginUI(container, manifest) {
 
     // Inject HTML
     container.innerHTML = `
-        <div style="display: flex; gap: 2rem;">
-            <div style="width: 250px; background: #f8f9fa; padding: 1rem; border-radius: 8px;">
+        <div style="display: flex; gap: 2rem; align-items: flex-start;">
+            <div style="width: 300px; background: #f8f9fa; padding: 1.5rem; border-radius: 8px; border: 1px solid #ddd;">
                 ${toolsHtml}
             </div>
             <div style="flex: 1;">
