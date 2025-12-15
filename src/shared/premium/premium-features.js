@@ -25,6 +25,12 @@ export const PREMIUM_FEATURES = {
             label: 'Safety Override',
             description: 'Bypass scan safety checks for artistic freedom.',
             tier: 'pro'
+        },
+        'simulate_scan': {
+            id: 'simulate_scan',
+            label: 'Simulate Scan',
+            description: 'Verify scanability before building.',
+            tier: 'pro'
         }
     }
 };

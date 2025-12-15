@@ -3,7 +3,8 @@
 
 export function drawBrick(ctx, x, y, studSize, color) {
     // Draw base with rounded corners
-    roundRect(ctx, x + 1, y + 1, studSize - 2, studSize - 2, 4);
+    const rectRadius = Math.max(1, studSize * 0.1); // Dynamic radius (10% of size)
+    roundRect(ctx, x + 1, y + 1, studSize - 2, studSize - 2, rectRadius);
     ctx.fillStyle = color;
     ctx.fill();
 
@@ -37,7 +38,7 @@ export function drawBrick(ctx, x, y, studSize, color) {
     // Subtle border
     ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
     ctx.lineWidth = 0.5;
-    roundRect(ctx, x + 1, y + 1, studSize - 2, studSize - 2, 4);
+    roundRect(ctx, x + 1, y + 1, studSize - 2, studSize - 2, rectRadius);
     ctx.stroke();
 }
 

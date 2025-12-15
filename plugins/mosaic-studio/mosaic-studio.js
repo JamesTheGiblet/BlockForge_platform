@@ -1,15 +1,19 @@
 
 
-import { COLOR_PALETTE_ARRAY } from '../../src/shared/color-palette.js';
+import { COLOR_PALETTE_ARRAY } from '../../src/shared/data/color-palette.js';
 import { Voxelizer, FileUtils } from '../../src/shared/index.js';
-import { StudioHeader } from '../../src/shared/studio-header.js';
-import { StudioStats } from '../../src/shared/studio-stats.js';
+import { StudioHeader } from '../../src/shared/ui/studio-header.js';
+import { StudioStats } from '../../src/shared/ui/studio-stats.js';
 
 export default class MosaicStudio {
     constructor() {
         this.image = null; // Stores the HTMLImageElement
         this.width = 48;
         this.canvas = null;
+        this.brightness = 100;
+        this.contrast = 100;
+        this.saturation = 100;
+        this.pixelate = 1;
     }
 
     async init() {
@@ -24,13 +28,211 @@ export default class MosaicStudio {
             ],
             id: 'mosaicstudio-main-header'
         });
+
+        // Hide legacy sidebar
+        const sidebar = document.getElementById('studio-sidebar');
+        if (sidebar) sidebar.style.display = 'none';
+
+        // Setup Layout (Original -> Adjusted -> Mosaic)
         this.canvas = document.getElementById('preview');
+        if (this.canvas) {
+            const mainContainer = document.createElement('div');
+            Object.assign(mainContainer.style, {
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '20px',
+                justifyContent: 'center',
+                alignItems: 'flex-start',
+                marginTop: '20px',
+                padding: '20px'
+            });
+
+            // 1. Original
+            const originalWrapper = document.createElement('div');
+            originalWrapper.innerHTML = '<h3 style="text-align:center;color:#666;margin-bottom:10px;">Original</h3>';
+            this.originalView = document.createElement('img');
+            this.originalView.id = 'view-original';
+            Object.assign(this.originalView.style, { maxWidth: '400px', maxHeight: '500px', display: 'block', border: '1px solid #ddd', borderRadius: '8px', background: '#f5f5f5' });
+            originalWrapper.appendChild(this.originalView);
+            mainContainer.appendChild(originalWrapper);
+
+            // 2. Adjusted
+            const adjustedWrapper = document.createElement('div');
+            adjustedWrapper.innerHTML = '<h3 style="text-align:center;color:#666;margin-bottom:10px;">Adjusted</h3>';
+            this.adjustedView = document.createElement('canvas');
+            this.adjustedView.id = 'view-adjusted';
+            Object.assign(this.adjustedView.style, { maxWidth: '400px', maxHeight: '500px', display: 'block', border: '1px solid #ddd', borderRadius: '8px', background: '#f5f5f5' });
+            adjustedWrapper.appendChild(this.adjustedView);
+            mainContainer.appendChild(adjustedWrapper);
+
+            // 3. Mosaic (Move existing canvas)
+            const mosaicWrapper = document.createElement('div');
+            mosaicWrapper.innerHTML = '<h3 style="text-align:center;color:#666;margin-bottom:10px;">Mosaic</h3>';
+            this.canvas.parentNode.insertBefore(mainContainer, this.canvas);
+            mosaicWrapper.appendChild(this.canvas);
+            mainContainer.appendChild(mosaicWrapper);
+        }
+
+        this.injectFancyControls();
         this.setupEventListeners();
+
+        // Load default image
+        const img = new Image();
+        img.src = '/Maggie_Simpson.png';
+        img.onload = () => {
+            this.image = img;
+            this.render();
+        };
+    }
+
+    injectFancyControls() {
+        let controls = document.getElementById('mosaicstudio-controls');
+        if (!controls) {
+            controls = document.createElement('div');
+            controls.id = 'mosaicstudio-controls';
+            
+            // Floating Window Styles
+            Object.assign(controls.style, {
+                position: 'fixed',
+                top: '140px',
+                left: '20px',
+                width: '260px',
+                zIndex: '1000',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '15px',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                color: '#333',
+                backdropFilter: 'blur(5px)',
+                maxHeight: '80vh',
+                overflowY: 'auto',
+                borderRadius: '12px',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+                padding: '15px',
+                border: '1px solid rgba(255,255,255,0.2)',
+                fontFamily: 'inherit',
+                transition: 'opacity 0.3s'
+            });
+
+            const preview = document.getElementById('preview');
+            if (preview && preview.parentNode) {
+                preview.parentNode.appendChild(controls);
+            } else {
+                document.body.insertBefore(controls, document.body.firstChild);
+            }
+        } else {
+            controls.innerHTML = '';
+        }
+
+        // Header
+        const header = document.createElement('div');
+        header.innerHTML = '🎨 <strong>Mosaic Tools</strong>';
+        header.style.borderBottom = '1px solid #eee';
+        header.style.paddingBottom = '10px';
+        header.style.marginBottom = '5px';
+        header.style.cursor = 'move';
+        controls.appendChild(header);
+
+        // Draggable Logic
+        let isDragging = false, startX, startY, initialLeft, initialTop;
+        header.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            const rect = controls.getBoundingClientRect();
+            initialLeft = rect.left;
+            initialTop = rect.top;
+            const onMove = (e) => {
+                if (!isDragging) return;
+                controls.style.left = `${initialLeft + (e.clientX - startX)}px`;
+                controls.style.top = `${initialTop + (e.clientY - startY)}px`;
+            };
+            const onUp = () => {
+                isDragging = false;
+                document.removeEventListener('mousemove', onMove);
+                document.removeEventListener('mouseup', onUp);
+            };
+            document.addEventListener('mousemove', onMove);
+            document.addEventListener('mouseup', onUp);
+        });
+
+        // Image Upload
+        controls.innerHTML += `
+            <div>
+                <label style="display:block;margin-bottom:5px;font-weight:600;font-size:0.9em;color:#444;">📁 Source Image</label>
+                <input id="upload-image-fancy" type="file" accept="image/*" style="width:100%; box-sizing:border-box; padding:8px; border-radius:6px; border:1px solid #ccc; font-size:0.9em;" />
+            </div>
+        `;
+
+        // Width Slider
+        controls.innerHTML += `
+            <div>
+                <label style="display:flex;justify-content:space-between;margin-bottom:5px;font-weight:600;font-size:0.9em;color:#444;">
+                    <span>📏 Width (Studs)</span>
+                    <span id="width-display">${this.width}</span>
+                </label>
+                <input id="target-width-fancy" type="range" min="16" max="128" value="${this.width}" style="width:100%; cursor:pointer;" />
+            </div>
+        `;
+
+        // Image Adjustments
+        controls.innerHTML += `
+            <div style="border-top:1px solid #eee; margin-top:10px; padding-top:10px;">
+                <label style="display:block;margin-bottom:8px;font-weight:600;font-size:0.9em;color:#444;">🎨 Adjustments</label>
+                
+                <div style="margin-bottom:8px;">
+                    <label style="display:flex;justify-content:space-between;font-size:0.8em;color:#666;">
+                        <span>Brightness</span>
+                        <span id="brightness-val">${this.brightness}%</span>
+                    </label>
+                    <input id="adjust-brightness" type="range" min="0" max="200" value="${this.brightness}" style="width:100%; cursor:pointer;" />
+                </div>
+
+                <div style="margin-bottom:8px;">
+                    <label style="display:flex;justify-content:space-between;font-size:0.8em;color:#666;">
+                        <span>Contrast</span>
+                        <span id="contrast-val">${this.contrast}%</span>
+                    </label>
+                    <input id="adjust-contrast" type="range" min="0" max="200" value="${this.contrast}" style="width:100%; cursor:pointer;" />
+                </div>
+
+                <div style="margin-bottom:8px;">
+                    <label style="display:flex;justify-content:space-between;font-size:0.8em;color:#666;">
+                        <span>Saturation</span>
+                        <span id="saturation-val">${this.saturation}%</span>
+                    </label>
+                    <input id="adjust-saturation" type="range" min="0" max="200" value="${this.saturation}" style="width:100%; cursor:pointer;" />
+                </div>
+
+                <div style="margin-bottom:8px;">
+                    <label style="display:flex;justify-content:space-between;font-size:0.8em;color:#666;">
+                        <span>Pixelate</span>
+                        <span id="pixelate-val">${this.pixelate}x</span>
+                    </label>
+                    <input id="adjust-pixelate" type="range" min="1" max="20" value="${this.pixelate}" style="width:100%; cursor:pointer;" />
+                </div>
+            </div>
+        `;
+
+        // Export Buttons
+        controls.innerHTML += `
+            <div style="display:flex; flex-direction:column; gap:8px; margin-top:10px; border-top:1px solid #eee; padding-top:10px;">
+                <button id="btn-png-fancy" style="padding:10px; border-radius:6px; border:none; background:#D4AF37; color:white; font-weight:600; cursor:pointer; box-shadow:0 2px 5px rgba(0,0,0,0.1);">💾 Save Image</button>
+                <button id="btn-csv-fancy" style="padding:10px; border-radius:6px; border:none; background:#333; color:white; font-weight:600; cursor:pointer; box-shadow:0 2px 5px rgba(0,0,0,0.1);">📄 Export CSV</button>
+            </div>
+        `;
+
+        // Responsive
+        if (window.innerWidth < 768) {
+            controls.style.top = 'auto'; controls.style.bottom = '20px';
+            controls.style.left = '50%'; controls.style.transform = 'translateX(-50%)';
+            controls.style.width = '90%';
+        }
     }
 
     setupEventListeners() {
         // Image Upload
-        document.getElementById('upload-image')?.addEventListener('change', async (e) => {
+        document.getElementById('upload-image-fancy')?.addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (file) {
                 this.image = await FileUtils.loadImage(file);
@@ -40,9 +242,43 @@ export default class MosaicStudio {
         });
 
         // Width Slider
-        document.getElementById('target-width')?.addEventListener('input', (e) => {
+        document.getElementById('target-width-fancy')?.addEventListener('input', (e) => {
             this.width = parseInt(e.target.value);
+            document.getElementById('width-display').textContent = this.width;
             this.render();
+        });
+
+        // Adjustment Sliders
+        const setupSlider = (id, prop, displayId, unit = '%') => {
+            document.getElementById(id)?.addEventListener('input', (e) => {
+                this[prop] = parseInt(e.target.value);
+                document.getElementById(displayId).textContent = this[prop] + unit;
+                this.render();
+            });
+        };
+
+        setupSlider('adjust-brightness', 'brightness', 'brightness-val');
+        setupSlider('adjust-contrast', 'contrast', 'contrast-val');
+        setupSlider('adjust-saturation', 'saturation', 'saturation-val');
+        setupSlider('adjust-pixelate', 'pixelate', 'pixelate-val', 'x');
+
+        // Export Buttons
+        document.getElementById('btn-csv-fancy')?.addEventListener('click', () => {
+            if (!this.lastBreakdown) return;
+            const csvData = this.lastBreakdown.map(b => ({
+                color: b.label,
+                hex: b.color,
+                qty: b.count
+            }));
+            import('../../src/shared/index.js').then(({ Exporters }) => {
+                Exporters.downloadCSV(csvData, 'mosaic.csv');
+            });
+        });
+
+        document.getElementById('btn-png-fancy')?.addEventListener('click', () => {
+            import('../../src/shared/index.js').then(({ Exporters }) => {
+                Exporters.downloadPNG(this.canvas, 'mosaic.png');
+            });
         });
     }
 
@@ -52,8 +288,48 @@ export default class MosaicStudio {
             return;
         }
         console.log(`🎨 Rendering Mosaic: ${this.width} studs wide`);
+
+        // Update Original View
+        const viewOriginal = document.getElementById('view-original');
+        if (viewOriginal && this.image) {
+            viewOriginal.src = this.image.src;
+        }
+
+        // Apply filters
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = this.image.width;
+        tempCanvas.height = this.image.height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.filter = `brightness(${this.brightness}%) contrast(${this.contrast}%) saturate(${this.saturation}%)`;
+        
+        if (this.pixelate > 1) {
+            // Pixelate effect
+            const w = Math.max(1, Math.floor(this.image.width / this.pixelate));
+            const h = Math.max(1, Math.floor(this.image.height / this.pixelate));
+            
+            const smallCanvas = document.createElement('canvas');
+            smallCanvas.width = w;
+            smallCanvas.height = h;
+            const sCtx = smallCanvas.getContext('2d');
+            sCtx.drawImage(this.image, 0, 0, w, h);
+            
+            ctx.imageSmoothingEnabled = false;
+            ctx.drawImage(smallCanvas, 0, 0, w, h, 0, 0, tempCanvas.width, tempCanvas.height);
+        } else {
+            ctx.drawImage(this.image, 0, 0, tempCanvas.width, tempCanvas.height);
+        }
+
+        // Update Adjusted View
+        const viewAdjusted = document.getElementById('view-adjusted');
+        if (viewAdjusted) {
+            viewAdjusted.width = this.image.width;
+            viewAdjusted.height = this.image.height;
+            const mCtx = viewAdjusted.getContext('2d');
+            mCtx.drawImage(tempCanvas, 0, 0);
+        }
+
         // 1. Voxelize (The heavy lifting)
-        const result = Voxelizer.fromImage(this.image, this.width, COLOR_PALETTE_ARRAY);
+        const result = Voxelizer.fromImage(tempCanvas, this.width, COLOR_PALETTE_ARRAY);
         console.log('[MosaicStudio] Voxelizer result:', result);
         if (result.grid && result.grid.length > 0) {
             console.log('[MosaicStudio] First row of grid:', result.grid[0]);
@@ -75,6 +351,7 @@ export default class MosaicStudio {
             const colorObj = COLOR_PALETTE_ARRAY.find(c => c.name === name) || { hex: '#888' };
             return { label: name, color: colorObj.hex, count: num };
         });
+        this.lastBreakdown = breakdown; // Store for export
         const statsPanel = document.getElementById('stats');
         StudioStats.render({
             statsPanel,
@@ -84,34 +361,6 @@ export default class MosaicStudio {
                 breakdown
             }
         });
-        // Add export buttons (CSV, PNG)
-        const btnRow = document.createElement('div');
-        btnRow.style.display = 'flex';
-        btnRow.style.gap = '0.5rem';
-        btnRow.style.marginTop = '1rem';
-        btnRow.innerHTML = `
-            <button id="btn-csv" style="flex:1; padding:8px; background:#333; color:white; border:none; border-radius:4px; cursor:pointer;">CSV</button>
-            <button id="btn-png" style="flex:1; padding:8px; background:#D4AF37; color:white; border:none; border-radius:4px; cursor:pointer;">Image</button>
-        `;
-        statsPanel.appendChild(btnRow);
-        setTimeout(() => {
-            document.getElementById('btn-csv')?.addEventListener('click', () => {
-                // Export color breakdown as CSV
-                const csvData = breakdown.map(b => ({
-                    color: b.label,
-                    hex: b.color,
-                    qty: b.count
-                }));
-                import('../../src/shared/index.js').then(({ Exporters }) => {
-                    Exporters.downloadCSV(csvData, 'mosaic.csv');
-                });
-            });
-            document.getElementById('btn-png')?.addEventListener('click', () => {
-                import('../../src/shared/index.js').then(({ Exporters }) => {
-                    Exporters.downloadPNG(this.canvas, 'mosaic.png');
-                });
-            });
-        }, 0);
     }
 
     drawCanvas(grid, width, height) {
@@ -130,7 +379,7 @@ export default class MosaicStudio {
         }
 
         // Use shared drawBrick utility
-        import('../../src/shared/brick-canvas.js').then(({ drawBrick }) => {
+        import('../../src/shared/bricks/brick-canvas.js').then(({ drawBrick }) => {
             let drawn = 0;
             for (let y = 0; y < height; y++) {
                 for (let x = 0; x < width; x++) {

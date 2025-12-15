@@ -13,7 +13,7 @@ export class StudioStats {
         if (!statsPanel || !stats) return;
         const { dimensions, totalBricks, breakdown } = stats;
         statsPanel.innerHTML = `
-            <div style="font-family: 'Segoe UI', system-ui, sans-serif; background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+            <div style="font-family: 'Segoe UI', system-ui, sans-serif; background: white; color: #333; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
                 <h3 style="margin-top: 0; color: #333; display: flex; align-items: center; gap: 10px;">
                     <span style="font-size: 1.5rem;">📊</span>
                     <span>Design Stats</span>
@@ -33,8 +33,8 @@ export class StudioStats {
                     ${breakdown.map(b => `
                         <div style="display: flex; align-items: center; margin-bottom: 8px;">
                             <div style="width: 12px; height: 12px; background: ${b.color}; border-radius: 3px; margin-right: 10px;"></div>
-                            <span style="flex: 1;">${b.label}</span>
-                            <span style="font-weight: 600; background: #e3f2fd; padding: 3px 10px; border-radius: 20px;">${b.count}</span>
+                            <span style="flex: 1; color: #333;">${b.label}</span>
+                            <span style="font-weight: 600; background: #e3f2fd; color: #1565C0; padding: 3px 10px; border-radius: 20px;">${b.count}</span>
                         </div>
                     `).join('')}
                 </div>

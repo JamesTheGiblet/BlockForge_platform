@@ -1,11 +1,9 @@
-import { ColorUtils } from '../../src/shared/index.js';
-import { FONT_DATA } from '../../src/shared/font-data.js';
-import { COLOR_PALETTE_ARRAY } from '../../src/shared/color-palette.js';
-import { TILE_BRICKS } from '../../src/shared/tile_bricks.js';
-import { Exporters } from '../../src/shared/exporters.js';
+import { COLOR_PALETTE_ARRAY } from '../../src/shared/data/color-palette.js';
+import { TILE_BRICKS } from '../../src/shared/bricks/tile_bricks.js';
+import { Exporters } from '../../src/shared/exporters/exporters.js';
 
-import { StudioHeader } from '../../src/shared/studio-header.js';
-import { StudioStats } from '../../src/shared/studio-stats.js';
+import { StudioHeader } from '../../src/shared/ui/studio-header.js';
+import { StudioStats } from '../../src/shared/ui/studio-stats.js';
 
 export default class QRStudio {
     constructor() {
@@ -18,12 +16,6 @@ export default class QRStudio {
         this.canvas = null;
         this.libLoaded = false;
         this.scanSafetyMode = true; // default ON, forced ON for exports
-        this.stylizedFinders = false; // default OFF
-
-        // Only allow tile bricks for QR builds
-        this.allowedBricks = TILE_BRICKS;
-
-        // New properties for improvements
         this.history = [];
         this.historyIndex = -1;
         this.MAX_HISTORY = 20;
@@ -31,8 +23,10 @@ export default class QRStudio {
         this._panZoom = null;
         this._brickLayout = null;
         this._lastGrid = null;
-        this._rawGrid = null;
         this.exportQuality = 1; // Default high quality
+
+        // Only allow tile bricks for QR builds
+        this.allowedBricks = TILE_BRICKS;
     }
 
     injectColorDropdowns() {
@@ -368,16 +362,6 @@ export default class QRStudio {
             </div>
         `;
 
-        // Stylized Finders Toggle
-        controls.innerHTML += `
-            <div style="display:flex;align-items:center;gap:8px;">
-                <input id="finder-style-toggle" type="checkbox" ${this.stylizedFinders ? 'checked' : ''}/>
-                <label for="finder-style-toggle" style="font-size:0.9em;font-weight:600;">
-                    ✨ Stylized Finders
-                </label>
-            </div>
-        `;
-
         // Export Quality
         controls.innerHTML += `
             <div>
@@ -454,8 +438,7 @@ export default class QRStudio {
             size: this.size,
             fgColor: this.fgColor,
             bgColor: this.bgColor,
-            scanSafetyMode: this.scanSafetyMode,
-            stylizedFinders: this.stylizedFinders
+            scanSafetyMode: this.scanSafetyMode
         };
         
         // Trim history if needed
@@ -476,7 +459,6 @@ export default class QRStudio {
         this.fgColor = state.fgColor;
         this.bgColor = state.bgColor;
         this.scanSafetyMode = state.scanSafetyMode;
-        this.stylizedFinders = state.stylizedFinders;
         
         // Update UI elements
         const dataInput = document.getElementById('qr-data');
@@ -493,9 +475,6 @@ export default class QRStudio {
         
         const safetyToggle = document.getElementById('scan-safety-toggle');
         if (safetyToggle) safetyToggle.checked = this.scanSafetyMode;
-        
-        const finderToggle = document.getElementById('finder-style-toggle');
-        if (finderToggle) finderToggle.checked = this.stylizedFinders;
         
         this.render();
     }
@@ -633,6 +612,7 @@ export default class QRStudio {
         function renderGridSVG(size, bricks, stepIdx, fgColor, bgColor) {
             let svg = `<svg width="${size*studSize+margin*2}" height="${size*studSize+margin*2}" xmlns='http://www.w3.org/2000/svg'>`;
             svg += `<rect x="0" y="0" width="${size*studSize+margin*2}" height="${size*studSize+margin*2}" fill="#eee"/>`;
+            svg += `<rect x="${margin}" y="${margin}" width="${size*studSize}" height="${size*studSize}" fill="${bgColor}"/>`;
             for (let i = 0; i <= stepIdx; i++) {
                 const b = bricks[i];
                 const color = b.isDark ? fgColor : bgColor;
@@ -640,7 +620,7 @@ export default class QRStudio {
                 const y = margin + b.y * studSize;
                 const w = (b.brick.width || 1) * studSize;
                 const h = (b.brick.depth || 1) * studSize;
-                svg += `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="4" fill="${color}" stroke="#444" stroke-width="0.5"/>`;
+                svg += `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="2" fill="${color}" stroke="#444" stroke-width="0.5"/>`;
             }
             svg += '</svg>';
             return svg;
@@ -677,6 +657,17 @@ export default class QRStudio {
             const row = [];
             for (let x = 0; x < this._lastGrid[y].length; x++) {
                 const cell = this._lastGrid[y][x];
+                if (!cell) {
+                    // Empty cell (Baseplate background)
+                    row.push({
+                        row: y + 1,
+                        col: x + 1,
+                        part: 'Baseplate',
+                        color: this.getColorName(this.bgColor),
+                        hex: this.bgColor
+                    });
+                    continue;
+                }
                 row.push({
                     row: y + 1,
                     col: x + 1,
@@ -715,6 +706,7 @@ export default class QRStudio {
         for (let y = 0; y < this._lastGrid.length; y++) {
             for (let x = 0; x < this._lastGrid[y].length; x++) {
                 const cell = this._lastGrid[y][x];
+                if (!cell) continue;
                 const color = cell.isDark ? this.fgColor : this.bgColor;
                 const brick = cell.brick;
                 const key = `${brick.name}|${color}`;
@@ -797,17 +789,6 @@ export default class QRStudio {
             this.render();
         });
 
-        document.getElementById('finder-style-toggle')?.addEventListener('change', (e) => {
-            if (window.monetization && window.monetization.isLocked('qr-studio', 'stylized_finders') && e.target.checked) {
-                e.target.checked = false;
-                window.monetization.openUpgradeModal('Stylized Finders');
-                return;
-            }
-            this.stylizedFinders = e.target.checked;
-            this.saveState();
-            this.render();
-        });
-
         document.getElementById('export-quality')?.addEventListener('change', (e) => {
             this.exportQuality = parseFloat(e.target.value);
         });
@@ -820,9 +801,19 @@ export default class QRStudio {
             this.redo();
         });
 
-        document.getElementById('qrstudio-validate-btn')?.addEventListener('click', () => {
-            this.validateQR();
-        });
+        const validateBtn = document.getElementById('qrstudio-validate-btn');
+        if (validateBtn) {
+            if (window.monetization && window.monetization.isLocked('qr-studio', 'simulate_scan')) {
+                validateBtn.innerHTML += ' 🔒';
+            }
+            validateBtn.addEventListener('click', () => {
+                if (window.monetization && window.monetization.isLocked('qr-studio', 'simulate_scan')) {
+                    window.monetization.openUpgradeModal('Simulate Scan');
+                    return;
+                }
+                this.validateQR();
+            });
+        }
     }
 
     render() {
@@ -847,10 +838,11 @@ export default class QRStudio {
 
             // 2. Generate QR (High Error Correction for bricks)
             try {
+                const genSize = this.size * 8; // Generate high-res to avoid aliasing
                 new QRCode(hiddenDiv, {
                     text: this.data,
-                    width: this.size,
-                    height: this.size,
+                    width: genSize,
+                    height: genSize,
                     correctLevel: QRCode.CorrectLevel.H
                 });
 
@@ -959,6 +951,10 @@ export default class QRStudio {
             const script = document.createElement('script');
             script.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js';
             script.onload = () => {
+                if (typeof jsQR === 'undefined') {
+                    reject(new Error("jsQR script loaded but global object not found"));
+                    return;
+                }
                 console.log("📦 jsQR loaded");
                 resolve();
             };
@@ -979,48 +975,56 @@ export default class QRStudio {
 
         try {
             await this.loadReaderLibrary();
-            if (!this.canvas) throw new Error("No canvas");
 
-            // Use requestAnimationFrame for better performance
-            requestAnimationFrame(() => {
-                // 1. Create simulation canvas
-                const simCanvas = document.createElement('canvas');
-                simCanvas.width = this.canvas.width;
-                simCanvas.height = this.canvas.height;
-                const ctx = simCanvas.getContext('2d');
+            // 1. Create simulation canvas with PROPER quiet zone
+            const studSize = 20;
+            const quietZone = 4; // QR spec requires 4 modules minimum
+            const margin = studSize * quietZone; // ✅ 80px for 32x32
+            
+            const simCanvas = document.createElement('canvas');
+            simCanvas.width = (this.size * studSize) + (margin * 2);
+            simCanvas.height = (this.size * studSize) + (margin * 2);
+            const ctx = simCanvas.getContext('2d');
 
-                // 2. Apply Blur (Simulate camera focus/resolution limits)
-                ctx.filter = 'blur(2px)';
-                ctx.drawImage(this.canvas, 0, 0);
+            // Fill background (quiet zone must be same as bgColor)
+            ctx.fillStyle = this.bgColor;
+            ctx.fillRect(0, 0, simCanvas.width, simCanvas.height);
 
-                // 3. Threshold (Simulate scanner binarization)
-                const imageData = ctx.getImageData(0, 0, simCanvas.width, simCanvas.height);
-                const data = imageData.data;
-                for (let i = 0; i < data.length; i += 4) {
-                    const avg = (data[i] + data[i+1] + data[i+2]) / 3;
-                    const val = avg < 128 ? 0 : 255;
-                    data[i] = data[i+1] = data[i+2] = val;
+            // Draw bricks (now properly aligned with quiet zone)
+            this.renderBricksToContext(ctx, margin, margin, studSize);
+
+            // 2. Get Data
+            const imageData = ctx.getImageData(0, 0, simCanvas.width, simCanvas.height);
+            const data = imageData.data;
+
+            // 3. Decode
+            if (typeof jsQR === 'undefined') throw new Error("Scanner library not loaded");
+            
+            let code;
+            try {
+                code = jsQR(data, imageData.width, imageData.height);
+            } catch (e) {
+                throw new Error(`Decoding failed: ${e.message}`);
+            }
+
+            if (resultDiv) {
+                if (code && code.data === this.data) {
+                    resultDiv.innerHTML = `✅ <strong>Readable!</strong>`;
+                    resultDiv.style.color = '#2E7D32';
+                } else if (code) {
+                    resultDiv.innerHTML = `⚠️ <strong>Mismatch:</strong> ${code.data.substring(0, 10)}...`;
+                    resultDiv.style.color = '#F57C00';
+                } else {
+                    resultDiv.innerHTML = `❌ <strong>Unreadable</strong> in simulation`;
+                    resultDiv.style.color = '#C62828';
                 }
-
-                // 4. Decode
-                const code = jsQR(data, imageData.width, imageData.height);
-
-                if (resultDiv) {
-                    if (code && code.data === this.data) {
-                        resultDiv.innerHTML = `✅ <strong>Robust!</strong> (Survived blur)`;
-                        resultDiv.style.color = '#2E7D32';
-                    } else if (code) {
-                        resultDiv.innerHTML = `⚠️ <strong>Mismatch:</strong> ${code.data.substring(0, 10)}...`;
-                        resultDiv.style.color = '#F57C00';
-                    } else {
-                        resultDiv.innerHTML = `❌ <strong>Unreadable</strong> in simulation`;
-                        resultDiv.style.color = '#C62828';
-                    }
-                }
-            });
+            }
         } catch (err) {
-            console.error(err);
-            if (resultDiv) resultDiv.innerHTML = 'Error loading scanner';
+            console.error("Scan Simulation Error:", err);
+            if (resultDiv) {
+                resultDiv.innerHTML = `❌ <strong>Error:</strong> ${err.message}`;
+                resultDiv.style.color = '#C62828';
+            }
         } finally {
             if (btn) btn.disabled = false;
         }
@@ -1038,31 +1042,27 @@ export default class QRStudio {
         const tile2x2 = findBrick(2, 2);
         const tile1x1 = findBrick(1, 1) || this.allowedBricks[0];
 
-        // Helper to check if x,y is in a finder pattern (7x7 at corners of bounds)
-        const isFinderZone = (x, y) => {
-            return (
-                (x < 7 && y < 7) ||
-                (x >= size - 7 && y < 7) ||
-                (x < 7 && y >= size - 7)
-            );
-        };
-
         for (let y = 0; y < size; y++) {
             for (let x = 0; x < size; x++) {
                 if (covered[y][x]) continue;
                 const isDark = rawGrid[y][x];
-                const isFinder = this.stylizedFinders && isDark && isFinderZone(x, y);
 
-                // Try 2x2 (Only if not a finder pattern, to preserve detail)
-                if (!isFinder && !enforceSafety && tile2x2 && x + 1 < size && y + 1 < size &&
+                // OPTIMIZATION: Skip background tiles
+                // We rely on the baseplate color for the background
+                if (!isDark) {
+                    covered[y][x] = true;
+                    continue;
+                }
+
+                // Try 2x2 (only if safety mode is OFF)
+                if (!enforceSafety && tile2x2 && x + 1 < size && y + 1 < size &&
                     !covered[y][x+1] && !covered[y+1][x] && !covered[y+1][x+1] &&
                     rawGrid[y][x+1] === isDark && rawGrid[y+1][x] === isDark && rawGrid[y+1][x+1] === isDark) {
                     
-                    bricks.push({ x, y, brick: tile2x2, isDark, isFinder: false });
+                    bricks.push({ x, y, brick: tile2x2, isDark }); // ✅ No isFinder flag
                     covered[y][x] = covered[y][x+1] = covered[y+1][x] = covered[y+1][x+1] = true;
                 } else {
-                    // Fallback to 1x1
-                    bricks.push({ x, y, brick: tile1x1, isDark, isFinder });
+                    bricks.push({ x, y, brick: tile1x1, isDark }); // ✅ No isFinder flag
                     covered[y][x] = true;
                 }
             }
@@ -1077,14 +1077,15 @@ export default class QRStudio {
         // Use requestAnimationFrame for smoother rendering
         requestAnimationFrame(() => {
             // Create an offscreen canvas to read pixel data
+            const sampleScale = 8;
             const tempCanvas = document.createElement('canvas');
-            tempCanvas.width = this.size;
-            tempCanvas.height = this.size;
+            tempCanvas.width = this.size * sampleScale;
+            tempCanvas.height = this.size * sampleScale;
             const ctx = tempCanvas.getContext('2d');
             
-            // Draw the image scaled exactly to our grid size (e.g., 32x32)
-            ctx.drawImage(img, 0, 0, this.size, this.size);
-            const imgData = ctx.getImageData(0, 0, this.size, this.size).data;
+            // Draw the image scaled to our sampling grid
+            ctx.drawImage(img, 0, 0, tempCanvas.width, tempCanvas.height);
+            const imgData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height).data;
 
             // 1. Parse raw grid (dark/light)
             const rawGrid = [];
@@ -1093,7 +1094,11 @@ export default class QRStudio {
             for (let y = 0; y < this.size; y++) {
                 const row = [];
                 for (let x = 0; x < this.size; x++) {
-                    const i = (y * this.size + x) * 4;
+                    // Sample center of the block
+                    const sx = Math.floor((x + 0.5) * sampleScale);
+                    const sy = Math.floor((y + 0.5) * sampleScale);
+                    const i = (sy * tempCanvas.width + sx) * 4;
+                    
                     const avg = (imgData[i] + imgData[i+1] + imgData[i+2]) / 3;
                     const isDark = avg < 128;
                     row.push(isDark);
@@ -1203,6 +1208,10 @@ export default class QRStudio {
         const offsetX = ((maxSize - this.size) * studSize) / 2;
         const offsetY = ((maxSize - this.size) * studSize) / 2;
 
+        // Draw Baseplate (Background Color)
+        ctx.fillStyle = this.bgColor;
+        ctx.fillRect(margin + offsetX, margin + offsetY, this.size * studSize, this.size * studSize);
+
         this.renderBricksToContext(ctx, margin + offsetX, margin + offsetY, studSize);
         
         ctx.restore();
@@ -1212,78 +1221,62 @@ export default class QRStudio {
         const bricks = this._brickLayout || [];
         
         bricks.forEach(item => {
-            const { x, y, brick, isDark, isFinder } = item;
+            const { x, y, brick, isDark } = item;
             const color = isDark ? this.fgColor : this.bgColor;
             const px = startX + (x * studSize);
             const py = startY + (y * studSize);
             const w = (brick.width || 1) * studSize;
             const h = (brick.depth || 1) * studSize;
 
+            // CRITICAL: Draw solid rectangles for QR validation
+            // No rounded corners, no gaps, no fancy effects
             ctx.fillStyle = color;
-            ctx.beginPath();
-            
-            if (isFinder) {
-                // Stylized Ring Tile for Finder Patterns
-                // Outer circle
-                ctx.arc(px + studSize/2, py + studSize/2, studSize/2 - 1, 0, Math.PI*2);
-                ctx.fill();
-                
-                // Inner hole (simulated with background color)
-                ctx.fillStyle = this.bgColor;
-                ctx.beginPath();
-                ctx.arc(px + studSize/2, py + studSize/2, studSize/4, 0, Math.PI*2);
-                ctx.fill();
-            } else if (brick.isTile) {
-                // Flat tile visual (scaled)
-                ctx.moveTo(px + 4, py);
-                ctx.lineTo(px + w - 4, py);
-                ctx.quadraticCurveTo(px + w, py, px + w, py + 4);
-                ctx.lineTo(px + w, py + h - 4);
-                ctx.quadraticCurveTo(px + w, py + h, px + w - 4, py + h);
-                ctx.lineTo(px + 4, py + h);
-                ctx.quadraticCurveTo(px, py + h, px, py + h - 4);
-                ctx.lineTo(px, py + 4);
-                ctx.quadraticCurveTo(px, py, px + 4, py);
-                ctx.closePath();
-                ctx.fill();
-                
-                // Subtle highlight
-                ctx.beginPath();
-                ctx.moveTo(px + 4, py + 4);
-                ctx.lineTo(px + w - 4, py + 4);
-                ctx.strokeStyle = 'rgba(255,255,255,0.15)';
-                ctx.lineWidth = 2;
-                ctx.stroke();
-            } else {
-                // Fallback / Plate visual
-                ctx.fillRect(px + 1, py + 1, w - 2, h - 2);
+            ctx.fillRect(px, py, w, h); // ✅ Solid fill, edge-to-edge
+
+            // Optional: Add subtle visual border INSIDE the brick
+            // This won't affect scanning since it's same color with slight opacity
+            if (brick.isTile) {
+                ctx.strokeStyle = 'rgba(0,0,0,0.05)';
+                ctx.lineWidth = 0.5;
+                ctx.strokeRect(px + 0.5, py + 0.5, w - 1, h - 1);
             }
         });
     }
 
     updateStats() {
-        const statsPanel = document.getElementById('stats');
+        let statsPanel = document.getElementById('stats');
+        if (!statsPanel) {
+            statsPanel = document.createElement('div');
+            statsPanel.id = 'stats';
+            statsPanel.style.marginTop = '1rem';
+            
+            const preview = document.getElementById('preview');
+            if (preview) {
+                const container = preview.closest('.panel') || preview.parentElement;
+                if (container) container.appendChild(statsPanel);
+            }
+        }
         if (!statsPanel) return;
-        
-        // Clear previous comparison reports
-        const existingReport = statsPanel.querySelector('.optimization-report');
-        if (existingReport) existingReport.remove();
         
         let totalBricks = 0;
         const brickUsage = {};
         
+        // Aggregate by Name AND Color for better breakdown
         (this._brickLayout || []).forEach(item => {
             totalBricks++;
             const name = item.brick.name;
-            brickUsage[name] = (brickUsage[name] || 0) + 1;
+            const color = item.isDark ? this.fgColor : this.bgColor;
+            const key = `${name}|${color}`;
+            
+            if (!brickUsage[key]) {
+                brickUsage[key] = { label: `${name} (${color})`, color: color, count: 0 };
+            }
+            brickUsage[key].count++;
         });
 
         // Show a breakdown of brick types used
-        const breakdown = Object.entries(brickUsage || {}).map(([name, count]) => ({
-            label: name,
-            color: '',
-            count
-        }));
+        const breakdown = Object.values(brickUsage).sort((a,b) => b.count - a.count);
+        
         StudioStats.render({
             statsPanel,
             stats: {
@@ -1294,32 +1287,33 @@ export default class QRStudio {
         });
 
         // Comparison Report
-        if (this._rawGrid) {
-            const safeLayout = this.optimizeBricks(this._rawGrid, true);
-            const optLayout = this.optimizeBricks(this._rawGrid, false);
-            const safeCount = safeLayout.length;
-            const optCount = optLayout.length;
-            
-            const report = document.createElement('div');
-            report.className = 'optimization-report';
-            report.style.marginTop = '15px';
-            report.style.padding = '10px';
-            report.style.background = this.scanSafetyMode ? '#f1f8e9' : '#e3f2fd';
-            report.style.borderRadius = '6px';
-            report.style.fontSize = '0.9em';
-            report.style.border = this.scanSafetyMode ? '1px solid #c5e1a5' : '1px solid #90caf9';
-            
-            if (this.scanSafetyMode) {
-                const savings = safeCount - optCount;
-                const percent = Math.round((savings / safeCount) * 100);
-                report.innerHTML = `<strong>💡 Optimization Available</strong><br>Disable Safety Mode to use larger tiles.<br>Potential savings: <strong>${savings} bricks</strong> (${percent}%)`;
-            } else {
-                report.innerHTML = `<strong>⚡ Optimized Mode Active</strong><br>Using ${optCount} bricks instead of ${safeCount}.<br>(Safety Mode would use 1x1s only)`;
-            }
-            statsPanel.appendChild(report);
+    if (this._rawGrid) {
+        const safeLayout = this.optimizeBricks(this._rawGrid, true);
+        const optLayout = this.optimizeBricks(this._rawGrid, false);
+        const safeCount = safeLayout.length;
+        const optCount = optLayout.length;
+
+        const report = document.createElement('div');
+        report.className = 'optimization-report';
+        report.style.marginTop = '15px';
+        report.style.padding = '10px';
+        report.style.background = this.scanSafetyMode ? '#f1f8e9' : '#e3f2fd';
+        report.style.borderRadius = '6px';
+        report.style.fontSize = '0.9em';
+        report.style.border = this.scanSafetyMode ? '1px solid #c5e1a5' : '1px solid #90caf9';
+
+        if (this.scanSafetyMode) {
+            const savings = safeCount - optCount;
+            const percent = Math.round((savings / safeCount) * 100);
+            report.innerHTML = `<strong>💡 Optimization Available</strong><br>Disable Safety Mode to use larger tiles.<br>Potential savings: <strong>${savings} bricks</strong> (${percent}%)`;
+        } else {
+            report.innerHTML = `<strong>⚡ Optimized Mode Active</strong><br>Using ${optCount} bricks instead of ${safeCount}.<br>(Safety Mode would use 1x1s only)`;
         }
-        
-        // Update undo/redo buttons
-        this.updateUndoRedoButtons();
+        statsPanel.appendChild(report);
+    }
+
+    // Update undo/redo buttons
+    this.updateUndoRedoButtons();
     }
 }
+    

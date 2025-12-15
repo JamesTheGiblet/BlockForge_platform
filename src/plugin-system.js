@@ -171,9 +171,6 @@ class PluginSystem {
         <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
           <span style="font-size: 2rem;">${plugin.icon}</span>
           <h1 style="font-size: 2.5rem; font-weight: 800; margin: 0;">${plugin.name}</h1>
-          <button class="btn btn-outline" style="margin-left: auto;" id="studio-back">
-            ← Back to Home
-          </button>
         </div>
         <p style="font-size: 1.2rem; opacity: 0.9; margin: 0;">${plugin.description}</p>
       </div>
@@ -181,12 +178,6 @@ class PluginSystem {
 
     // Insert after main header
     document.querySelector('header').after(header);
-
-    // Setup back button
-    header.querySelector('#studio-back').addEventListener('click', () => {
-      this.studioSelector.value = '';
-      this.unloadCurrentPlugin();
-    });
   }
 
   handleExport(data, type) {
