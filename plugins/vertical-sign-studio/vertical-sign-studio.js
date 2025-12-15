@@ -3,8 +3,55 @@ import { Voxelizer, Exporters } from '../../src/shared/index.js';
 import { COLOR_PALETTE_ARRAY } from '../../src/shared/color-palette.js';
 
 import { StudioHeader } from '../../src/shared/studio-header.js';
+import { StudioStats } from '../../src/shared/studio-stats.js';
 
 export default class VerticalSignStudio {
+        init3D() {
+            const THREE = this.THREE;
+            const width = this.container.clientWidth || 500;
+            const height = 400;
+
+            this.scene = new THREE.Scene();
+            this.scene.background = new THREE.Color(0xf0f4f8);
+
+            this.camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+            this.camera.position.set(0, 15, 30);
+            this.camera.lookAt(0, 2, 0);
+
+            this.renderer = new THREE.WebGLRenderer({ antialias: true });
+            this.renderer.setSize(width, height);
+            this.renderer.shadowMap.enabled = true;
+            this.container.appendChild(this.renderer.domElement);
+
+            // Lights
+            const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+            this.scene.add(ambient);
+            const dir = new THREE.DirectionalLight(0xffffff, 0.8);
+            dir.position.set(10, 20, 10);
+            dir.castShadow = true;
+            this.scene.add(dir);
+
+            // Simple Orbit Controls (Mouse Drag)
+            let isDragging = false;
+            let previousMousePosition = { x: 0, y: 0 };
+            this.renderer.domElement.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                previousMousePosition = { x: e.clientX, y: e.clientY };
+            });
+            this.renderer.domElement.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    const deltaMove = {
+                        x: e.clientX - previousMousePosition.x,
+                        y: e.clientY - previousMousePosition.y
+                    };
+                    if (this.textGroup) {
+                        this.textGroup.rotation.y += deltaMove.x * 0.01;
+                    }
+                    previousMousePosition = { x: e.clientX, y: e.clientY };
+                }
+            });
+            document.addEventListener('mouseup', () => isDragging = false);
+        }
     constructor() {
         this.text = "BFS";
         this.textColor = "#1B2A34";
@@ -58,7 +105,6 @@ export default class VerticalSignStudio {
             this.THREE = window.THREE;
             return;
         }
-        
         return new Promise((resolve) => {
             const script = document.createElement('script');
             script.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
@@ -68,22 +114,6 @@ export default class VerticalSignStudio {
             };
             document.head.appendChild(script);
         });
-    }
-
-    init3D() {
-        const THREE = this.THREE;
-        const width = this.container.clientWidth || 500;
-        const height = 400;
-
-        this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color(0xf0f4f8);
-
-        this.camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-        this.camera.position.set(0, 15, 30);
-        this.camera.lookAt(0, 2, 0);
-
-        this.renderer = new THREE.WebGLRenderer({ antialias: true });
-        this.renderer.setSize(width, height);
         this.renderer.shadowMap.enabled = true;
         this.container.appendChild(this.renderer.domElement);
 
@@ -236,21 +266,44 @@ export default class VerticalSignStudio {
 
     updateStats(count) {
         const statsPanel = document.getElementById('stats');
+        // Count text and background bricks for breakdown
+        let textBricks = 0, bgBricks = 0;
+        if (this.textGroup) {
+            this.textGroup.children.forEach(mesh => {
+                if (mesh.material && mesh.material.color) {
+                    const hex = '#' + mesh.material.color.getHexString();
+                    if (hex.toLowerCase() === this.textColor.toLowerCase()) textBricks++;
+                    else if (hex.toLowerCase() === this.bgColor.toLowerCase()) bgBricks++;
+                }
+            });
+        }
+        StudioStats.render({
+            statsPanel,
+            stats: {
+                dimensions: `Height: ${this.height} layers (rendering 5 for text)`,
+                totalBricks: count,
+                breakdown: [
+                    { label: 'Text Bricks', color: this.textColor, count: textBricks },
+                    { label: 'Background', color: this.bgColor, count: bgBricks }
+                ]
+            }
+        });
+        // Restore export button
         if (statsPanel) {
-            statsPanel.innerHTML = `
-                <div style="text-align:center;">
-                    <h3>Total Bricks: ${count}</h3>
-                    <p>Height: ${this.height} layers (rendering 5 for text)</p>
-                    <hr/>
-                    <button id="export-stl" style="width:100%; padding:10px; background:#FF5722; color:white; border:none; border-radius:4px; cursor:pointer;">
-                        💾 Export STL (Baseplate)
-                    </button>
-                </div>
-            `;
-            
-            document.getElementById('export-stl').onclick = () => {
+            const btn = document.createElement('button');
+            btn.id = 'export-stl';
+            btn.style.width = '100%';
+            btn.style.padding = '10px';
+            btn.style.background = '#FF5722';
+            btn.style.color = 'white';
+            btn.style.border = 'none';
+            btn.style.borderRadius = '4px';
+            btn.style.cursor = 'pointer';
+            btn.textContent = '💾 Export STL (Baseplate)';
+            btn.onclick = () => {
                 alert("STL Export requires STLExporter.js (Adding this to shared library is a Task for Phase 3!)");
             };
+            statsPanel.appendChild(btn);
         }
     }
 

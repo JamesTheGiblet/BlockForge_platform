@@ -3,11 +3,21 @@ import { pluginLoader } from './core/plugin-loader.js';
 async function initApp() {
     console.log('🚀 BlockForge Platform Initializing...');
     
+    const container = document.getElementById('app-container');
+    // Save the landing page HTML so we can restore it later
+    const landingPageHTML = container.innerHTML;
+
     // 1. Load Registry
     const plugins = await pluginLoader.loadRegistry();
     
     // 2. Populate Dropdown
     const selector = document.getElementById('studio-selector');
+
+    // Clear existing options (except placeholder) to prevent duplicates
+    while (selector.options.length > 1) {
+        selector.remove(1);
+    }
+
     plugins.forEach(plugin => {
         const option = document.createElement('option');
         option.value = plugin.id;
@@ -18,9 +28,16 @@ async function initApp() {
     // 3. Handle Selection
     selector.addEventListener('change', async (e) => {
         const pluginId = e.target.value;
-        if (!pluginId) return;
+        
+        // If "Select a Studio..." is chosen (value=""), go back home
+        if (!pluginId) {
+            container.innerHTML = landingPageHTML;
+            // Re-initialize landing page scripts (global functions from index.html)
+            if (window.setupStudioCards) window.setupStudioCards();
+            if (window.setupCTAButton) window.setupCTAButton();
+            return;
+        }
 
-        const container = document.getElementById('app-container');
         container.innerHTML = '<p>Loading UI...</p>';
 
         try {
@@ -29,6 +46,15 @@ async function initApp() {
 
             // Build UI
             renderPluginUI(container, pluginData.manifest);
+
+            // Wire up the "Back to Home" button
+            const backBtn = document.getElementById('back-to-home');
+            if (backBtn) {
+                backBtn.addEventListener('click', () => {
+                    selector.value = ""; // Reset dropdown
+                    selector.dispatchEvent(new Event('change')); // Trigger change handler
+                });
+            }
 
             // Load Logic
             await pluginLoader.loadPlugin(pluginId);
@@ -140,7 +166,11 @@ function renderPluginUI(container, manifest) {
     // Inject HTML
     container.innerHTML = `
         <div style="display: flex; gap: 2rem; align-items: flex-start;">
-            <div style="width: 300px; background: #f8f9fa; padding: 1.5rem; border-radius: 8px; border: 1px solid #ddd;">
+            <div id="studio-sidebar" style="width: 300px; background: #f8f9fa; padding: 1.5rem; border-radius: 8px; border: 1px solid #ddd;">
+                <button id="back-to-home" style="width:100%; margin-bottom:1.5rem; padding:0.8rem; cursor:pointer; background:#fff; border:1px solid #ddd; border-radius:4px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:0.5rem; transition:background 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                    <span style="font-size:1.2em;">←</span> Back to Home
+                </button>
+                <hr style="border:0; border-top:1px solid #eee; margin-bottom:1.5rem;">
                 ${toolsHtml}
             </div>
             <div style="flex: 1;">

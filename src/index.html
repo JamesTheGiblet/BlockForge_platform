@@ -3,346 +3,878 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BlockForge Platform | Build. Paint. Create.</title>
+    <title>BlockForge Platform | The Ultimate Brick Creation Suite</title>
     <meta property="og:image" content="/preview.jpg">
     <meta name="twitter:image" content="/preview.jpg">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Work+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+    /* Pro Hero styles */
+    .pro-hero {
+        background: var(--gradient-primary);
+        color: white;
+        border-radius: 32px;
+        margin: 3rem auto 2rem auto;
+        padding: 3rem 2rem;
+        max-width: 900px;
+        text-align: center;
+        box-shadow: 0 8px 32px rgba(255,61,0,0.10);
+        position: relative;
+    }
+    .pro-title {
+        font-size: 2.5rem;
+        font-family: 'Space Grotesk', sans-serif;
+        font-weight: 800;
+        margin-bottom: 1rem;
+    }
+    .pro-gradient {
+        background: var(--gradient-accent);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    .pro-desc {
+        font-size: 1.2rem;
+        margin-bottom: 2rem;
+        opacity: 0.95;
+    }
+    .pro-cta {
+        background: var(--accent-dark);
+        color: white;
+        border: none;
+        padding: 1rem 2.5rem;
+        font-size: 1.1rem;
+        font-weight: 700;
+        border-radius: 50px;
+        cursor: pointer;
+        box-shadow: 0 4px 16px rgba(255,171,0,0.15);
+        transition: background 0.2s, transform 0.2s;
+    }
+    .pro-cta:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px) scale(1.04);
+    }
+    </style>
     <style>
         :root {
-            --primary: #FF5722; /* Lego Redish */
-            --primary-hover: #E64A19;
-            --secondary: #0088CC; /* Lego Blueish */
-            --yellow: #FFD500; /* Lego Yellow */
-            --dark: #212121;
-            --text: #333;
-            --light: #f8f9fa;
-            --border: #e0e0e0;
-            --shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --primary: #FF3D00; /* Vibrant orange */
+            --primary-light: #FF8A65;
+            --primary-dark: #DD2C00;
+            --secondary: #2979FF; /* Electric blue */
+            --accent: #FFD600; /* Bright yellow */
+            --accent-dark: #FFAB00;
+            --dark: #1A1A2E;
+            --darker: #121212;
+            --light: #F5F7FA;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --glass-bg: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.1);
+            --shadow-hover: 0 30px 60px rgba(255, 61, 0, 0.2);
+            --gradient-primary: linear-gradient(135deg, #FF3D00 0%, #FF8A00 100%);
+            --gradient-secondary: linear-gradient(135deg, #2979FF 0%, #00B0FF 100%);
+            --gradient-accent: linear-gradient(135deg, #FFD600 0%, #FF9100 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         body {
-            font-family: 'Work Sans', sans-serif;
-            margin: 0;
-            background-color: #f4f6f8;
-            /* Subtle stud pattern */
-            background-image: radial-gradient(circle, #e3e6ea 2px, transparent 2.5px);
-            background-size: 24px 24px;
-            color: var(--text);
-            display: flex;
-            flex-direction: column;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--darker);
+            color: var(--light);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(255, 61, 0, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(41, 121, 255, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 50% 50%, rgba(255, 214, 0, 0.05) 0%, transparent 20%);
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
-        /* Navigation */
+        /* Animated background particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            background: var(--primary);
+            border-radius: 50%;
+            opacity: 0.1;
+            animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg); }
+            100% { transform: translateY(-1000px) rotate(720deg); }
+        }
+
+        /* Header */
         header {
-            background: rgba(255, 255, 255, 0.9);
-            -webkit-backdrop-filter: blur(10px);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(0,0,0,0.05);
-            padding: 1rem 2rem;
+            padding: 1.5rem 3rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
             position: sticky;
             top: 0;
             z-index: 100;
+            background: rgba(26, 26, 46, 0.9);
+            -webkit-backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .brand {
-            font-family: 'Space Mono', monospace;
-            font-weight: 700;
-            font-size: 1.5rem;
-            color: var(--dark);
-            text-decoration: none;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 1rem;
+            text-decoration: none;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 1.8rem;
+            color: white;
+            transition: transform 0.3s ease;
+        }
+
+        .brand:hover {
+            transform: scale(1.02);
+        }
+
+        .brand-logo {
+            width: 48px;
+            height: 48px;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 8px rgba(255, 61, 0, 0.3));
+        }
+
+        .brand-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .brand-name {
+            line-height: 1;
             letter-spacing: -0.5px;
         }
-        
-        .brand-logo {
-            width: 32px;
-            height: 32px;
-            object-fit: contain;
+
+        .brand-tagline {
+            font-size: 0.7rem;
+            font-weight: 400;
+            opacity: 0.7;
+            margin-top: 0.2rem;
+            letter-spacing: 1px;
         }
 
-        .brand span { color: var(--primary); }
+        .primary-text {
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
 
         /* Studio Selector */
-        .studio-picker-wrapper {
+        .studio-selector-container {
             position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 1rem;
         }
-        
+
+        .studio-selector-label {
+            position: absolute;
+            left: -10000px;
+            top: auto;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+        }
+
         .studio-picker {
             appearance: none;
-            padding: 0.8rem 2.5rem 0.8rem 1.2rem;
-            font-size: 0.95rem;
-            font-weight: 600;
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            font-family: 'Work Sans', sans-serif;
-            min-width: 280px;
+            background: linear-gradient(90deg, rgba(255,255,255,0.13) 0%, rgba(255,214,0,0.10) 100%);
+            border: 2px solid rgba(255, 255, 255, 0.18);
+            border-radius: 18px;
+            padding: 1.1rem 3.5rem 1.1rem 1.7rem;
+            font-family: 'Space Grotesk', 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: 1.08rem;
+            color: white;
+            min-width: 320px;
             cursor: pointer;
-            background: white;
-            color: var(--dark);
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            box-shadow: 0 4px 24px 0 rgba(255,61,0,0.10), 0 1.5px 8px 0 rgba(41,121,255,0.08);
+            transition: box-shadow 0.25s, border 0.25s, background 0.25s, transform 0.2s;
+            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px);
+            letter-spacing: 0.02em;
         }
 
         .studio-picker:hover {
-            border-color: #ccc;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            background: linear-gradient(90deg, rgba(255,255,255,0.18) 0%, rgba(255,214,0,0.16) 100%);
+            border-color: var(--primary);
+            box-shadow: 0 8px 32px rgba(255, 61, 0, 0.18), 0 2px 12px rgba(41,121,255,0.10);
+            transform: translateY(-2px) scale(1.01);
         }
 
         .studio-picker:focus {
             outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.15);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(255, 214, 0, 0.18);
         }
-        
-        .studio-picker-arrow {
+
+        .studio-picker option {
+            background: var(--dark);
+            color: white;
+            padding: 1rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+        }
+
+        .studio-picker option[value=""] {
+            color: #FFD600;
+            font-weight: 800;
+            font-size: 1.08rem;
+            letter-spacing: 0.04em;
+            background: linear-gradient(90deg, #FF3D00 0%, #FFD600 100%);
+            text-shadow: 0 2px 8px rgba(255, 61, 0, 0.10);
+        }
+
+        .selector-icon {
             position: absolute;
-            right: 14px;
+            right: 1.5rem;
             top: 50%;
             transform: translateY(-50%);
             pointer-events: none;
-            color: #666;
-            font-size: 0.8rem;
+            color: var(--accent);
+            font-size: 1.4rem;
+            filter: drop-shadow(0 2px 6px rgba(255, 214, 0, 0.10));
         }
 
-        /* Main Workspace */
+        /* Main Content */
         main {
-            flex: 1;
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
-            width: 100%;
             padding: 2rem;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
+            padding-top: 4rem;
         }
 
-        /* Empty State / Welcome Hero */
-        #placeholder {
+        /* Hero Section */
+        .hero {
             text-align: center;
-            padding: 5rem 2rem;
-            background: white;
-            border-radius: 24px;
-            box-shadow: var(--shadow);
-            margin-top: 1rem;
-            border: 1px solid white;
+            padding: 4rem 2rem;
+            margin-bottom: 4rem;
             position: relative;
-            overflow: hidden;
-        }
-        
-        #placeholder::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; height: 6px;
-            background: linear-gradient(90deg, var(--primary) 25%, var(--yellow) 25%, var(--yellow) 50%, var(--secondary) 50%, var(--secondary) 75%, #4CAF50 75%);
         }
 
         .hero-title {
-            font-size: 3.5rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 4.5rem;
             font-weight: 800;
-            margin-bottom: 1.5rem;
-            color: var(--dark);
-            letter-spacing: -1px;
             line-height: 1.1;
+            margin-bottom: 2rem;
+            letter-spacing: -1.5px;
+            text-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         }
-        
+
         .hero-title span {
-            color: var(--primary);
+            background: linear-gradient(90deg, var(--primary), var(--accent), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             position: relative;
-            display: inline-block;
         }
-        
+
         .hero-title span::after {
             content: '';
             position: absolute;
-            bottom: 8px;
+            bottom: 5px;
             left: 0;
             width: 100%;
-            height: 12px;
-            background: rgba(255, 87, 34, 0.15);
+            height: 8px;
+            background: rgba(255, 61, 0, 0.2);
             z-index: -1;
-            transform: rotate(-1deg);
+            border-radius: 4px;
         }
 
-        .hero-logo {
-            width: 200px;
-            height: 200px;
-            margin-bottom: 0.2rem;
-            object-fit: contain;
-        }
-
-        .hero-text {
+        .hero-subtitle {
             font-size: 1.5rem;
-            color: #555;
-            max-width: 640px;
+            max-width: 700px;
             margin: 0 auto 3rem;
-            line-height: 1.7;
+            opacity: 0.85;
+            line-height: 1.6;
+            font-weight: 300;
         }
 
-        .cta-arrow {
-            font-size: 2.5rem;
-            color: var(--primary);
-            animation: bounce 2s infinite;
+        /* Studios Grid */
+        .studios-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 4rem;
+        }
+
+        .studio-card {
+            background: var(--card-bg);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--dark);
+            position: relative;
+            cursor: pointer;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .studio-card:hover {
+            transform: translateY(-15px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--primary);
+        }
+
+        .card-header {
+            padding: 2rem 2rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .card-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            flex-shrink: 0;
+        }
+
+        .icon-sign { background: var(--gradient-primary); color: white; }
+        .icon-mosaic { background: var(--gradient-secondary); color: white; }
+        .icon-qr { background: linear-gradient(135deg, #00C853, #64DD17); color: white; }
+        .icon-relief { background: linear-gradient(135deg, #AA00FF, #E040FB); color: white; }
+
+        .card-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        .card-body {
+            padding: 0 2rem 1.5rem;
+            flex-grow: 1;
+        }
+
+        .card-description {
+            font-size: 1rem;
+            line-height: 1.6;
             opacity: 0.8;
         }
-        
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            max-width: 900px;
-            margin: 3rem auto 0;
-            text-align: left;
-        }
-        
-        .feature-card {
-            background: #f8f9fa;
-            padding: 1.5rem;
-            border-radius: 12px;
-            border: 1px solid rgba(0,0,0,0.05);
-            transition: transform 0.2s;
-        }
-        
-        .feature-card:hover {
-            transform: translateY(-3px);
-            background: white;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
-        
-        .feature-icon {
-            font-size: 1.5rem;
-            margin-bottom: 0.5rem;
-            display: block;
-        }
-        
-        .feature-title {
-            font-weight: 700;
-            margin-bottom: 0.25rem;
-            color: var(--dark);
-        }
-        
-        .feature-desc {
-            font-size: 0.9rem;
-            color: #666;
+
+        .card-footer {
+            padding: 1.5rem 2rem;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
-            40% {transform: translateY(-10px);}
-            60% {transform: translateY(-5px);}
+        .card-tag {
+            background: rgba(0, 0, 0, 0.05);
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .card-arrow {
+            color: var(--primary);
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+        }
+
+        .studio-card:hover .card-arrow {
+            transform: translateX(5px);
+        }
+
+        /* Stats Section */
+        .stats-section {
+            margin-top: 6rem;
+            display: flex;
+            justify-content: center;
+            gap: 4rem;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            opacity: 0.7;
+            margin-top: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            margin-top: 6rem;
+            text-align: center;
+            padding: 4rem;
+            background: linear-gradient(135deg, rgba(255, 61, 0, 0.1), rgba(41, 121, 255, 0.1));
+            border-radius: 32px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .cta-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .cta-subtitle {
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto 2.5rem;
+            opacity: 0.8;
+        }
+
+        .cta-button {
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            padding: 1.2rem 3rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: 0 10px 30px rgba(255, 61, 0, 0.3);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(255, 61, 0, 0.4);
         }
 
         /* Footer */
         footer {
+            margin-top: 6rem;
+            padding: 3rem;
             text-align: center;
-            padding: 2rem;
-            background: white;
-            color: #888;
-            border-top: 1px solid var(--border);
-            margin-top: auto;
-            font-size: 0.9rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        /* Plugin Container Styles (Inherited) */
-        .panel {
-            background: white;
-            border-radius: 16px;
-            box-shadow: var(--shadow);
-            border: 1px solid rgba(0,0,0,0.05);
-            overflow: hidden;
+        .footer-logo {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
         }
+
+        .footer-tagline {
+            opacity: 0.6;
+            margin-bottom: 2rem;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .copyright {
+            font-size: 0.9rem;
+            opacity: 0.5;
+            margin-top: 2rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header {
+                padding: 1rem;
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+            
+            .studio-picker {
+                min-width: 100%;
+            }
+            
+            .hero-title {
+                font-size: 2.8rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.2rem;
+            }
+            
+            .studios-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-section {
+                gap: 2rem;
+            }
+            
+            .stat-number {
+                font-size: 2.5rem;
+            }
+            
+            .cta-section {
+                padding: 2rem 1rem;
+            }
+            
+            .cta-title {
+                font-size: 2rem;
+            }
+        }
+
+        /* Animation for cards on load */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .studio-card {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .studio-card:nth-child(1) { animation-delay: 0.1s; }
+        .studio-card:nth-child(2) { animation-delay: 0.2s; }
+        .studio-card:nth-child(3) { animation-delay: 0.3s; }
+        .studio-card:nth-child(4) { animation-delay: 0.4s; }
     </style>
 </head>
 <body>
+    <!-- Animated background particles -->
+    <div class="particles" id="particles-container"></div>
 
     <header>
         <a href="/" class="brand">
             <img src="/icon.png" class="brand-logo" alt="BlockForge Logo">
-            BLOCK<span>FORGE</span>
+            <div class="brand-text">
+                <div class="brand-name">BLOCK<span class="primary-text">FORGE</span></div>
+                <div class="brand-tagline">BUILD • PAINT • CREATE</div>
+            </div>
         </a>
         
-        <div class="studio-picker-wrapper">
-            <label id="studio-selector-label" for="studio-selector" style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden;">
+        <div class="studio-selector-container">
+            <label id="studio-selector-label" class="studio-selector-label" for="studio-selector">
                 Select a Studio
             </label>
             <select id="studio-selector" class="studio-picker" aria-labelledby="studio-selector-label">
-                <option value="">✨ Select a Studio...</option>
+                <option value="">🎨 Select a Studio...</option>
             </select>
-            <div class="studio-picker-arrow">▼</div>
+            <div class="selector-icon">
+                <i class="fas fa-chevron-down"></i>
+            </div>
         </div>
     </header>
 
     <main id="app-container">
-        <div id="placeholder">
-            <img src="/icon.png" class="hero-logo" alt="BlockForge Logo">
-            <h1 class="hero-title">Build <span>Anything</span>.</h1>
-            <p class="hero-text">
-                The ultimate brick prototyping suite. 
-                Convert images, text, and models into buildable masterpieces.
+        <section class="hero">
+                <div id="pro-hero-section"></div>
+            <h1 class="hero-title">Where <span>Imagination</span> Becomes <span>Reality</span></h1>
+            <p class="hero-subtitle">
+                The ultimate suite for digital brick creation. Transform ideas, images, and designs into buildable masterpieces with our powerful studio tools.
             </p>
-            <div class="features-grid">
-                <div class="feature-card" tabindex="0" role="button" data-studio="sign-studio" aria-label="Sign Studio">
-                    <span class="feature-icon">🔤</span>
-                    <div class="feature-title">Sign Studio</div>
-                    <div class="feature-desc">Create custom brick text signs</div>
+            
+            <div class="stats-section">
+                <div class="stat-item">
+                    <div class="stat-number">8</div>
+                    <div class="stat-label">Specialized Studios</div>
                 </div>
-                <div class="feature-card" tabindex="0" role="button" data-studio="mosaic-studio" aria-label="Mosaic Studio">
-                    <span class="feature-icon">🖼️</span>
-                    <div class="feature-title">Mosaic Studio</div>
-                    <div class="feature-desc">Turn photos into pixel art</div>
+                <div class="stat-item">
+                    <div class="stat-number">∞</div>
+                    <div class="stat-label">Creative Possibilities</div>
                 </div>
-                <div class="feature-card" tabindex="0" role="button" data-studio="qr-studio" aria-label="QR Studio">
-                    <span class="feature-icon">📱</span>
-                    <div class="feature-title">QR Studio</div>
-                    <div class="feature-desc">Generate scannable codes</div>
-                </div>
-                <div class="feature-card" tabindex="0" role="button" data-studio="relief-studio" aria-label="Relief Studio">
-                    <span class="feature-icon">🏔️</span>
-                    <div class="feature-title">Relief Studio</div>
-                    <div class="feature-desc">3D topographical maps</div>
+                <div class="stat-item">
+                    <div class="stat-number">100%</div>
+                    <div class="stat-label">Build-Ready Output</div>
                 </div>
             </div>
-            <div style="margin-top: 3rem; opacity: 0.6;">
-                <div class="cta-arrow">☝️</div>
-                <p style="font-size: 0.9rem; margin-top: 0.5rem;">Select a tool above to start or click a card below</p>
+        </section>
+
+        <section class="studios-grid" id="studios-grid">
+            <div class="studio-card" data-studio="sign-studio" tabindex="0" role="button" aria-label="Open Sign Studio">
+                <div class="card-header">
+                    <div class="card-icon icon-sign">
+                        <i class="fas fa-font"></i>
+                    </div>
+                    <div>
+                        <div class="card-title">Sign Studio</div>
+                        <div class="card-subtitle">Text & Typography Designer</div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p class="card-description">
+                        Create stunning brick lettering, custom signs, and typographic art. Choose from multiple fonts, sizes, and colors to build anything from simple labels to elaborate displays.
+                    </p>
+                </div>
+                <div class="card-footer">
+                    <div class="card-tag">Design Tool</div>
+                    <div class="card-arrow">
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
+                </div>
             </div>
-        </div>
+
+            <div class="studio-card" data-studio="mosaic-studio" tabindex="0" role="button" aria-label="Open Mosaic Studio">
+                <div class="card-header">
+                    <div class="card-icon icon-mosaic">
+                        <i class="fas fa-image"></i>
+                    </div>
+                    <div>
+                        <div class="card-title">Mosaic Studio</div>
+                        <div class="card-subtitle">Pixel Art Generator</div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p class="card-description">
+                        Transform any photo into beautiful brick pixel art. Adjust resolution, color palette, and scale to create stunning mosaics and portraits that can actually be built.
+                    </p>
+                </div>
+                <div class="card-footer">
+                    <div class="card-tag">Art Generator</div>
+                    <div class="card-arrow">
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="studio-card" data-studio="qr-studio" tabindex="0" role="button" aria-label="Open QR Studio">
+                <div class="card-header">
+                    <div class="card-icon icon-qr">
+                        <i class="fas fa-qrcode"></i>
+                    </div>
+                    <div>
+                        <div class="card-title">QR Studio</div>
+                        <div class="card-subtitle">Interactive Code Creator</div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p class="card-description">
+                        Generate scannable QR codes that can be physically built with bricks. Perfect for interactive displays, treasure hunts, or adding digital connectivity to physical builds.
+                    </p>
+                </div>
+                <div class="card-footer">
+                    <div class="card-tag">Utility</div>
+                    <div class="card-arrow">
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="studio-card" data-studio="relief-studio" tabindex="0" role="button" aria-label="Open Relief Studio">
+                <div class="card-header">
+                    <div class="card-icon icon-relief">
+                        <i class="fas fa-mountain"></i>
+                    </div>
+                    <div>
+                        <div class="card-title">Relief Studio</div>
+                        <div class="card-subtitle">3D Topography Designer</div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p class="card-description">
+                        Convert heightmaps and 3D models into buildable brick landscapes. Create realistic terrain, architectural models, or abstract 3D sculptures with precise layer control.
+                    </p>
+                </div>
+                <div class="card-footer">
+                    <div class="card-tag">3D Modeling</div>
+                    <div class="card-arrow">
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="cta-section">
+            <h2 class="cta-title">Ready to Build Something Amazing?</h2>
+            <p class="cta-subtitle">
+                Join thousands of creators who are already turning their ideas into brick reality. No experience needed - just imagination!
+            </p>
+            <button class="cta-button" id="start-building-btn">
+                <i class="fas fa-rocket"></i>
+                Start Building for Free
+            </button>
+        </section>
     </main>
 
     <footer>
-        <p>&copy; 2025 BlockForge Platform. All bricks reserved.</p>
+        <div class="footer-logo">BLOCK<span class="primary-text">FORGE</span></div>
+        <p class="footer-tagline">
+            The ultimate digital brick prototyping suite for creators, builders, and dreamers.
+        </p>
+        <p class="copyright">
+            &copy; 2025 BlockForge Platform. All bricks reserved. | Made with <i class="fas fa-heart" style="color: var(--primary);"></i> for the building community.
+        </p>
     </footer>
 
-    <script type="module" src="/main.js"></script>
-    <script>
-    // Make feature cards clickable to select the corresponding studio
-    document.addEventListener('DOMContentLoaded', function() {
-        const cards = document.querySelectorAll('.feature-card[data-studio]');
-        const selector = document.getElementById('studio-selector');
-        cards.forEach(card => {
-            card.addEventListener('click', () => {
-                const studio = card.getAttribute('data-studio');
-                if (selector) {
-                    selector.value = studio;
-                    // Trigger change event to load the studio
-                    selector.dispatchEvent(new Event('change', { bubbles: true }));
-                }
-            });
-            card.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    card.click();
-                }
-            });
+    <script type="module">
+        import { Monetization } from './monetization.js';
+        // Show Pro Hero after hero section
+        document.addEventListener('DOMContentLoaded', () => {
+            const proHero = document.getElementById('pro-hero-section');
+            if (proHero && window.monetization && window.monetization.showProHero) {
+                window.monetization.showProHero(proHero);
+            } else if (proHero) {
+                // fallback if not global
+                import('./monetization.js').then(mod => {
+                    (mod?.window?.monetization || mod?.Monetization?.prototype?.showProHero) && (mod?.window?.monetization?.showProHero?.(proHero) || new mod.Monetization().showProHero(proHero));
+                });
+            }
         });
-    });
     </script>
+    <script>
+        // Create animated background particles
+        function createParticles() {
+            const container = document.getElementById('particles-container');
+            const particleCount = 50;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                
+                // Random size between 2px and 6px
+                const size = Math.random() * 4 + 2;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                
+                // Random position
+                particle.style.left = `${Math.random() * 100}vw`;
+                particle.style.top = `${Math.random() * 100}vh`;
+                
+                // Random color from theme
+                const colors = ['#FF3D00', '#2979FF', '#FFD600', '#FFFFFF'];
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                particle.style.backgroundColor = color;
+                
+                // Random animation delay and duration
+                const delay = Math.random() * 20;
+                const duration = 20 + Math.random() * 10;
+                particle.style.animationDelay = `${delay}s`;
+                particle.style.animationDuration = `${duration}s`;
+                
+                container.appendChild(particle);
+            }
+        }
+        
+        // Make studio cards clickable
+        function setupStudioCards() {
+            const cards = document.querySelectorAll('.studio-card');
+            const selector = document.getElementById('studio-selector');
+            
+            cards.forEach(card => {
+                card.addEventListener('click', () => {
+                    const studio = card.getAttribute('data-studio');
+                    if (selector && studio) {
+                        selector.value = studio;
+                        selector.dispatchEvent(new Event('change', { bubbles: true }));
+                        
+                        // Add visual feedback
+                        card.style.transform = 'scale(0.98)';
+                        setTimeout(() => {
+                            card.style.transform = '';
+                        }, 200);
+                    }
+                });
+                
+                card.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        card.click();
+                    }
+                });
+            });
+        }
+        
+        // CTA button functionality
+        function setupCTAButton() {
+            const ctaButton = document.getElementById('start-building-btn');
+            const selector = document.getElementById('studio-selector');
+            
+            if (ctaButton) {
+                ctaButton.addEventListener('click', () => {
+                    // Pick a random studio to suggest
+                    const studios = ['sign-studio', 'mosaic-studio', 'qr-studio', 'relief-studio'];
+                    const randomStudio = studios[Math.floor(Math.random() * studios.length)];
+                    
+                    if (selector) {
+                        selector.value = randomStudio;
+                        selector.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                    
+                    // Button animation
+                    ctaButton.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        ctaButton.style.transform = '';
+                    }, 200);
+                });
+            }
+        }
+        
+        // Initialize everything when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+            setupStudioCards();
+            setupCTAButton();
+            
+            // Add a subtle hover effect to the brand
+            const brand = document.querySelector('.brand');
+            if (brand) {
+                brand.addEventListener('mouseenter', () => {
+                    brand.style.transform = 'scale(1.02)';
+                });
+                
+                brand.addEventListener('mouseleave', () => {
+                    brand.style.transform = 'scale(1)';
+                });
+            }
+        });
+    </script>
+    <script type="module" src="/main.js"></script>
 </body>
 </html>

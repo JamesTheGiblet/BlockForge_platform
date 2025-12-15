@@ -1,5 +1,9 @@
-import { COLOR_PALETTE } from '../../src/shared/color-palette.js';
+
+
+import { COLOR_PALETTE_ARRAY } from '../../src/shared/color-palette.js';
 import { FileUtils, Exporters, Voxelizer, BrickOptimizer } from '../../src/shared/index.js';
+import { StudioHeader } from '../../src/shared/studio-header.js';
+import { StudioStats } from '../../src/shared/studio-stats.js';
 
 export default class ArchitectStudio {
     constructor() {
@@ -15,14 +19,22 @@ export default class ArchitectStudio {
 
     async init() {
         console.log("✅ Architect Studio Initialized");
+        StudioHeader.inject({
+            title: 'Architect Studio',
+            description: 'Turn house photos into <span style="font-weight:700;color:#4CAF50;">LEGO blueprints</span>!<br>Upload a home image, select architectural style, and generate a brick-by-brick plan with a detailed materials list.',
+            features: [
+                { icon: '', label: 'Photo to Blueprint', color: '#2196F3' },
+                { icon: '', label: 'Architectural Styles', color: '#4CAF50' },
+                { icon: '', label: 'Materials List', color: '#D4AF37' }
+            ],
+            id: 'architectstudio-main-header'
+        });
         this.canvas = document.getElementById('preview');
         this.setupEventListeners();
-        
         // Set default date
         const dateInput = document.getElementById('closing-date');
         if (dateInput) dateInput.valueAsDate = new Date();
-        
-        this.render(); 
+        this.render();
     }
 
     setupEventListeners() {
@@ -173,61 +185,38 @@ export default class ArchitectStudio {
     updateStats(bom, total) {
         const statsPanel = document.getElementById('stats');
         if (!statsPanel) return;
-
-        // 1. Generate Table Rows
-        const rows = bom.map(item => `
-            <tr style="border-bottom: 1px solid #eee;">
-                <td style="padding: 4px;">${item.part}</td>
-                <td style="padding: 4px; color:${item.color.hex}">■ ${item.color.name}</td>
-                <td style="padding: 4px; text-align:right"><strong>${item.count}</strong></td>
-            </tr>
-        `).join('');
-
-        // 2. Render HTML with Buttons
-        statsPanel.innerHTML = `
-            <div style="background: #fff; border-radius: 4px; padding: 0.5rem;">
-                <h3 style="margin-top:0; border-bottom: 2px solid #D4AF37; padding-bottom: 0.5rem;">Materials List</h3>
-                
-                <table style="width:100%; border-collapse: collapse; font-size: 0.9rem; margin-bottom: 1rem;">
-                    <thead>
-                        <tr style="background: #f8f9fa;">
-                            <th style="text-align:left; padding: 4px;">Part</th>
-                            <th style="text-align:left; padding: 4px;">Color</th>
-                            <th style="text-align:right; padding: 4px;">Qty</th>
-                        </tr>
-                    </thead>
-                    <tbody>${rows}</tbody>
-                </table>
-
-                <div style="text-align: center; margin-bottom: 1rem; font-weight: bold;">
-                    Total Bricks: ${total}
-                </div>
-
-                <div style="display: flex; gap: 0.5rem;">
-                    <button id="btn-csv" style="flex:1; padding:8px; background:#333; color:white; border:none; border-radius:4px; cursor:pointer;">
-                        📄 CSV
-                    </button>
-                    <button id="btn-png" style="flex:1; padding:8px; background:#D4AF37; color:white; border:none; border-radius:4px; cursor:pointer;">
-                        📸 Image
-                    </button>
-                </div>
-            </div>
+        StudioStats.render({
+            statsPanel,
+            stats: {
+                dimensions: this.brickLayout && this.brickLayout.width && this.brickLayout.height ? `${this.brickLayout.width} × ${this.brickLayout.height}` : '',
+                totalBricks: total,
+                breakdown: bom.map(item => ({
+                    label: `${item.color} (${item.part})`,
+                    color: item.hex,
+                    count: item.qty
+                }))
+            }
+        });
+        // Restore export buttons
+        const btns = document.createElement('div');
+        btns.style.display = 'flex';
+        btns.style.gap = '0.5rem';
+        btns.innerHTML = `
+            <button id="btn-csv" style="flex:1; padding:8px; background:#333; color:white; border:none; border-radius:4px; cursor:pointer;">📄 CSV</button>
+            <button id="btn-png" style="flex:1; padding:8px; background:#D4AF37; color:white; border:none; border-radius:4px; cursor:pointer;">📸 Image</button>
         `;
-
-        // 3. Attach Event Listeners (Logic inside the View!)
-        // This is a "micro-interaction" handled within the plugin
+        statsPanel.appendChild(btns);
         setTimeout(() => {
             document.getElementById('btn-csv')?.addEventListener('click', () => {
                 // Prepare clean data for CSV
                 const csvData = bom.map(i => ({
                     part: i.part,
-                    color: i.color.name,
-                    hex: i.color.hex,
-                    qty: i.count
+                    color: i.color,
+                    hex: i.hex,
+                    qty: i.qty
                 }));
                 Exporters.downloadCSV(csvData, `architect-${this.style}.csv`);
             });
-
             document.getElementById('btn-png')?.addEventListener('click', () => {
                 Exporters.downloadPNG(this.canvas, `architect-${this.style}.png`);
             });

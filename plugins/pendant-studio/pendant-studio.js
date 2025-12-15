@@ -1,8 +1,9 @@
+
 import { FONT_DATA } from '../../src/shared/font-data.js';
 import { Exporters, FileUtils } from '../../src/shared/index.js';
 import { COLOR_PALETTE_ARRAY } from '../../src/shared/color-palette.js';
-
 import { StudioHeader } from '../../src/shared/studio-header.js';
+import { StudioStats } from '../../src/shared/studio-stats.js';
 
 export default class PendantStudio {
     constructor() {
@@ -244,19 +245,27 @@ export default class PendantStudio {
     updateStats() {
         const statsPanel = document.getElementById('stats');
         const count = this.grid.flat().filter(x => x===1).length;
-        
+        StudioStats.render({
+            statsPanel,
+            stats: {
+                dimensions: `${this.gridSize} × ${this.gridSize}`,
+                totalBricks: count,
+                breakdown: [
+                    { label: 'Gems', color: this.color, count }
+                ]
+            }
+        });
+        // Restore export buttons
         if (statsPanel) {
-            statsPanel.innerHTML = `
-                <div style="text-align:center">
-                    <h3>${count} Gems</h3>
-                    <p>Size: ${this.gridSize}x${this.gridSize} studs</p>
-                    <div style="display:flex; gap:5px; margin-top:10px;">
-                        <button id="btn-stl" style="flex:1; padding:8px; background:#333; color:white; border:none; cursor:pointer;">Export STL</button>
-                        <button id="btn-img" style="flex:1; padding:8px; background:#D4AF37; color:white; border:none; cursor:pointer;">Save Image</button>
-                    </div>
-                </div>
+            const btns = document.createElement('div');
+            btns.style.display = 'flex';
+            btns.style.gap = '5px';
+            btns.style.marginTop = '10px';
+            btns.innerHTML = `
+                <button id="btn-stl" style="flex:1; padding:8px; background:#333; color:white; border:none; cursor:pointer;">Export STL</button>
+                <button id="btn-img" style="flex:1; padding:8px; background:#D4AF37; color:white; border:none; cursor:pointer;">Save Image</button>
             `;
-            
+            statsPanel.appendChild(btns);
             document.getElementById('btn-img').onclick = () => Exporters.downloadPNG(this.canvas, `pendant-${this.initials}.png`);
             document.getElementById('btn-stl').onclick = () => alert("STL Export logic goes here (Ported from original HTML if needed)");
         }

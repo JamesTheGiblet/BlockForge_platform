@@ -1,4 +1,9 @@
+
+import { COLOR_PALETTE_ARRAY } from '../../src/shared/color-palette.js';
+
 import { Exporters } from '../../src/shared/index.js';
+import { StudioHeader } from '../../src/shared/studio-header.js';
+import { StudioStats } from '../../src/shared/studio-stats.js';
 
 export default class ThreeDStudio {
     constructor() {
@@ -14,21 +19,26 @@ export default class ThreeDStudio {
 
     async init() {
         console.log("✅ 3D Studio Initialized");
-        
+        StudioHeader.inject({
+            title: '3D Studio',
+            description: 'Build and explore <span style="font-weight:700;color:#E53935;">3D brick models</span> in real time!<br>Choose a model, paint with color, import STL or JSON, and export your creation as an image or 3D file.',
+            features: [
+                { icon: '', label: '3D Preview', color: '#2196F3' },
+                { icon: '', label: 'Model Import/Export', color: '#E53935' },
+                { icon: '', label: 'Voxel Painting', color: '#FFD500' }
+            ],
+            id: 'threedstudio-main-header'
+        });
         // 1. Load Three.js
         await this.loadThreeJS();
-        
         // 2. Setup Container
         this.container = document.getElementById('preview');
         this.container.style.height = "500px";
         this.container.style.overflow = "hidden";
-        
         // 3. Init Scene
         this.init3D();
-        
         // 4. Setup Listeners
         this.setupEventListeners();
-        
         // 5. Initial Render
         this.generate(this.modelType);
         this.animate();
@@ -397,17 +407,42 @@ export default class ThreeDStudio {
 
     updateStats() {
         const statsPanel = document.getElementById('stats');
-        if (statsPanel) {
-            statsPanel.innerHTML = `
-                <div style="font-family:monospace; padding:10px;">
-                    <h3>Parts Inventory</h3>
-                    <p>1x1 Bricks: ${this.brickCounts['1x1']}</p>
-                    <p>1x2 Bricks: ${this.brickCounts['1x2']}</p>
-                    <p>1x3 Bricks: ${this.brickCounts['1x3']}</p>
-                    <hr>
-                    <strong>Total: ${this.brickCounts['1x1'] + this.brickCounts['1x2'] + this.brickCounts['1x3']}</strong>
-                </div>
-            `;
-        }
+        if (!statsPanel) return;
+        const breakdown = [
+            { label: '1x1 Bricks', color: '#B71C1C', count: this.brickCounts['1x1'] },
+            { label: '1x2 Bricks', color: '#1976D2', count: this.brickCounts['1x2'] },
+            { label: '1x3 Bricks', color: '#388E3C', count: this.brickCounts['1x3'] }
+        ];
+        StudioStats.render({
+            statsPanel,
+            stats: {
+                dimensions: '',
+                totalBricks: this.brickCounts['1x1'] + this.brickCounts['1x2'] + this.brickCounts['1x3'],
+                breakdown
+            }
+        });
+        // Add export buttons (CSV, PNG)
+        const btnRow = document.createElement('div');
+        btnRow.style.display = 'flex';
+        btnRow.style.gap = '0.5rem';
+        btnRow.style.marginTop = '1rem';
+        btnRow.innerHTML = `
+            <button id="btn-csv" style="flex:1; padding:8px; background:#333; color:white; border:none; border-radius:4px; cursor:pointer;">CSV</button>
+            <button id="btn-png" style="flex:1; padding:8px; background:#D4AF37; color:white; border:none; border-radius:4px; cursor:pointer;">Image</button>
+        `;
+        statsPanel.appendChild(btnRow);
+        setTimeout(() => {
+            document.getElementById('btn-csv')?.addEventListener('click', () => {
+                // Export brick breakdown as CSV
+                const csvData = breakdown.map(b => ({
+                    part: b.label,
+                    qty: b.count
+                }));
+                Exporters.downloadCSV(csvData, '3d-studio.csv');
+            });
+            document.getElementById('btn-png')?.addEventListener('click', () => {
+                Exporters.downloadPNG(this.renderer.domElement, '3d-studio.png');
+            });
+        }, 0);
     }
 }

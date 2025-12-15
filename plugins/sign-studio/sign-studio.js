@@ -1,8 +1,9 @@
+
 import { FONT_DATA } from '../../src/shared/font-data.js';
 import { Voxelizer } from '../../src/shared/index.js';
 import { COLOR_PALETTE_ARRAY } from '../../src/shared/color-palette.js';
-
 import { StudioHeader } from '../../src/shared/studio-header.js';
+import { StudioStats } from '../../src/shared/studio-stats.js';
 
 export default class SignStudio {
     constructor() {
@@ -262,24 +263,21 @@ export default class SignStudio {
         // 1. Get Raw Text Grid from Shared Library
         const rawVoxelData = Voxelizer.fromText(this.text, FONT_DATA, { spacing: 1 });
         const textGrid = rawVoxelData.grid;
-        
+
         // 2. Apply Sign Studio Logic (Padding & Borders)
         let padding = 2;
-        let borderThickness = this.options.borderStyle === 'simple' ? 2 : 
+        let borderThickness = this.options.borderStyle === 'simple' ? 2 :
                               this.options.borderStyle === 'double' ? 3 : 0;
-        
+
         const contentWidth = rawVoxelData.width;
         const contentHeight = rawVoxelData.height;
         const totalWidth = contentWidth + (padding * 2) + (borderThickness * 2);
         const totalHeight = contentHeight + (padding * 2) + (borderThickness * 2);
-        
+
         let finalGrid = [];
-
         const createRow = (type) => Array(totalWidth).fill(type);
-
         // A. Top Border
         for(let i = 0; i < borderThickness; i++) finalGrid.push(createRow(2));
-
         // B. Top Padding
         for(let i = 0; i < padding; i++) {
             let row = [];
@@ -288,7 +286,6 @@ export default class SignStudio {
             for(let b = 0; b < borderThickness; b++) row.push(2);
             finalGrid.push(row);
         }
-
         // C. Content Rows
         for(let r = 0; r < contentHeight; r++) {
             let row = [];
@@ -299,7 +296,6 @@ export default class SignStudio {
             for(let b = 0; b < borderThickness; b++) row.push(2);
             finalGrid.push(row);
         }
-
         // D. Bottom Padding
         for(let i = 0; i < padding; i++) {
             let row = [];
@@ -308,13 +304,29 @@ export default class SignStudio {
             for(let b = 0; b < borderThickness; b++) row.push(2);
             finalGrid.push(row);
         }
-
         // E. Bottom Border
         for(let i = 0; i < borderThickness; i++) finalGrid.push(createRow(2));
 
         // 3. Render to Canvas
         this.drawCanvas(finalGrid, totalWidth, totalHeight);
-        this.updateStats(finalGrid);
+
+        // 4. Shared StudioStats
+        const textCount = finalGrid.flat().filter(v => v === 1).length;
+        const borderCount = finalGrid.flat().filter(v => v === 2).length;
+        const bgCount = finalGrid.flat().filter(v => v === 0).length;
+        const statsPanel = document.getElementById('stats');
+        StudioStats.render({
+            statsPanel,
+            stats: {
+                dimensions: `${totalWidth} × ${totalHeight}`,
+                totalBricks: textCount + borderCount + bgCount,
+                breakdown: [
+                    { label: 'Text Bricks', color: this.options.textColor, count: textCount },
+                    { label: 'Border Bricks', color: this.options.textColor, count: borderCount },
+                    { label: 'Background', color: this.options.bgColor, count: bgCount }
+                ]
+            }
+        });
     }
 
     drawCanvas(grid, width, height) {
@@ -423,70 +435,5 @@ export default class SignStudio {
         ctx.closePath();
     }
 
-    updateStats(grid) {
-        let textCount = 0, bgCount = 0, borderCount = 0;
-        grid.flat().forEach(v => {
-            if(v === 1) textCount++;
-            else if(v === 2) borderCount++;
-            else bgCount++;
-        });
-
-        const statsPanel = document.getElementById('stats');
-        if (statsPanel) {
-            const totalBricks = textCount + bgCount + borderCount;
-            
-            statsPanel.innerHTML = `
-                <div style="font-family: 'Segoe UI', system-ui, sans-serif; background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
-                    <h3 style="margin-top: 0; color: #333; display: flex; align-items: center; gap: 10px;">
-                        <span style="font-size: 1.5rem;">📊</span>
-                        <span>Design Stats</span>
-                    </h3>
-                    
-                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px;">
-                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; border-radius: 10px; text-align: center;">
-                            <div style="font-size: 0.9rem; opacity: 0.9;">Dimensions</div>
-                            <div style="font-size: 1.5rem; font-weight: 700;">${grid[0].length} × ${grid.length}</div>
-                        </div>
-                        
-                        <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 15px; border-radius: 10px; text-align: center;">
-                            <div style="font-size: 0.9rem; opacity: 0.9;">Total Bricks</div>
-                            <div style="font-size: 1.5rem; font-weight: 700;">${totalBricks}</div>
-                        </div>
-                    </div>
-                    
-                    <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
-                        <h4 style="margin: 0 0 10px 0; color: #555;">Brick Breakdown</h4>
-                        
-                        <div style="display: flex; align-items: center; margin-bottom: 8px;">
-                            <div style="width: 12px; height: 12px; background: ${this.options.textColor}; border-radius: 3px; margin-right: 10px;"></div>
-                            <span style="flex: 1;">Text Bricks</span>
-                            <span style="font-weight: 600; background: #e3f2fd; padding: 3px 10px; border-radius: 20px;">${textCount}</span>
-                        </div>
-                        
-                        <div style="display: flex; align-items: center; margin-bottom: 8px;">
-                            <div style="width: 12px; height: 12px; background: ${this.options.textColor}; opacity: 0.7; border-radius: 3px; margin-right: 10px;"></div>
-                            <span style="flex: 1;">Border Bricks</span>
-                            <span style="font-weight: 600; background: #fff3e0; padding: 3px 10px; border-radius: 20px;">${borderCount}</span>
-                        </div>
-                        
-                        <div style="display: flex; align-items: center;">
-                            <div style="width: 12px; height: 12px; background: ${this.options.bgColor}; border-radius: 3px; margin-right: 10px;"></div>
-                            <span style="flex: 1;">Background</span>
-                            <span style="font-weight: 600; background: #e8f5e9; padding: 3px 10px; border-radius: 20px;">${bgCount}</span>
-                        </div>
-                    </div>
-                    
-                    <div style="font-size: 0.8rem; color: #888; text-align: center; border-top: 1px solid #eee; padding-top: 10px;">
-                        Updates in real-time as you design
-                    </div>
-                </div>
-            `;
-            
-            // Animate stats update
-            statsPanel.style.animation = 'slideIn 0.5s ease-out';
-            setTimeout(() => {
-                statsPanel.style.animation = '';
-            }, 500);
-        }
-    }
+    // updateStats now handled by StudioStats
 }
