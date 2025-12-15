@@ -204,6 +204,7 @@ export default class QRStudio {
             Object.assign(controls.style, {
                 position: 'fixed',
                 top: '140px',
+                top: '120px',
                 left: '20px',
                 width: '260px',
                 zIndex: '1000',
@@ -415,6 +416,7 @@ export default class QRStudio {
                 controls.style.maxWidth = '320px';
             } else {
                 controls.style.top = '140px';
+                controls.style.top = '120px';
                 controls.style.left = '20px';
                 controls.style.transform = 'none';
                 controls.style.width = '260px';

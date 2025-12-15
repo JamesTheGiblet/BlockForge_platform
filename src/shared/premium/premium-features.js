@@ -32,6 +32,32 @@ export const PREMIUM_FEATURES = {
             description: 'Verify scanability before building.',
             tier: 'pro'
         }
+    },
+    'mosaic-studio': {
+        'export_csv': {
+            id: 'export_csv',
+            label: 'CSV Parts List',
+            description: 'Export a compatible parts list for BrickLink.',
+            tier: 'pro'
+        },
+        'export_guide': {
+            id: 'export_guide',
+            label: 'Build Guide',
+            description: 'Generate professional step-by-step build guides.',
+            tier: 'pro'
+        },
+        'painter_tool': {
+            id: 'painter_tool',
+            label: 'Mosaic Painter',
+            description: 'Manually edit bricks with a brush tool.',
+            tier: 'pro'
+        },
+        'fill_tool': {
+            id: 'fill_tool',
+            label: 'Fill Bucket',
+            description: 'Fill connected areas with a single color.',
+            tier: 'pro'
+        }
     }
 };
 
