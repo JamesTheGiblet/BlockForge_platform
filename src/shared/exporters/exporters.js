@@ -1,4 +1,4 @@
-import { FileUtils } from './utils/files.js';
+import { FileUtils } from '../utils/files.js';
 import { ColorUtils } from './color-palette.js';
 
 export class Exporters {

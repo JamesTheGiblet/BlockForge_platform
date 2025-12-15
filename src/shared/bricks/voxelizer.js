@@ -1,4 +1,4 @@
-import { ColorUtils } from './utils/color.js';
+import { ColorUtils } from '../utils/color.js';
 
 export class Voxelizer {
     /**
